@@ -70,13 +70,21 @@ On paper, after research, before a composition exists.
 
 ## Capturing real output
 
-Prefer the product's own test host or a scripted session. One file per screen per locale, written by the test runner's file snapshot so `-u` regenerates them. Assert the outcomes the film claims. Point the runner's root at the product repo when the builder resolves the manifest from the working directory.
+The video package does not own the product's test runner. The runner, and the package that boots the product, stay in the product. A small config next to the capture file points the runner at the product repo, and the npm script changes into that repo before invoking the product's package manager. This film used vitest that way. The config and the calls are in [example.md](example.md).
 
-Typical sequence for a product that blocks something: empty state, configure the rule through the real form, create the failing record, load each surface in the permissive mode, switch mode through the real action, load again, attempt the action (expect failure), fix the record through the real update API, check again, attempt again (expect success).
+The shape:
 
-Give every created record the content locale. Set the UI locale separately.
+- `root` is the product repository, not `video/<name>/`. Builders that read a manifest from the working directory fail if the root is the video folder.
+- `include` is only `video/<name>/capture/**/*.capture.ts`, so the product's own suite does not run.
+- One test loops the locales. It boots the real host, drives the real admin and action APIs, and writes each response with the runner's file snapshot (`toMatchFileSnapshot`, update with `-u`). Do not `JSON.stringify` into a file yourself; a hand-written file will not be regenerated.
+- Assert the outcome the film claims, in the test, both ways: the blocked attempt fails, the fixed attempt succeeds. A snapshot of a failure can otherwise be treated as the happy path on the next run.
+- Created records get the content locale. The host gets the UI locale separately, including the locale list, not only a site language field.
+
+Sequence when the product blocks something: empty state, submit the real form, install the failing record, load each surface in the permissive mode, switch mode through the real action, load again, attempt the action and expect failure, fix the record through the real update API, check again, attempt again and expect success. Save a snapshot at every load, not only at the end.
 
 If there is no test host, drive the running app and save the network response or the rendered DOM. The bytes still come from the product.
+
+Tools for the rest of the film, used as command-line programs rather than as libraries inside the scenes: ffmpeg (contact sheets, logo split, `ffprobe`, loudness), python3 with numpy (pixel counts and the synthesized bed; the standard-library `wave` module writes the files), and the product's own package manager for the capture. Remotion renders. The backdrop is generated, not cut from the reference.
 
 ## Proving the renderer
 

@@ -27,7 +27,17 @@ Those belong to this product. Write new ones from the product in front of you.
 
 ## The film
 
-30fps, 120 BPM, 15 frames a beat. The project lived in the product repository at `video/launch/`, gitignored, installed with its own npm so Remotion never entered the product lockfile. Deliveries were `video/preflight-launch.mp4` and `video/preflight-launch-ja.mp4`, also gitignored. Tools: ffmpeg, python3 with numpy, Node.
+30fps, 120 BPM, 15 frames a beat. The project lived in the product repository at `video/launch/`, gitignored, installed with its own npm so Remotion never entered the product lockfile. Deliveries were `video/preflight-launch.mp4` and `video/preflight-launch-ja.mp4`, also gitignored.
+
+Tools, and what each one did:
+
+| Tool | Used for |
+| --- | --- |
+| ffmpeg | Reference contact sheets, logo split with `geq`, delivery `ffprobe`, loudness |
+| python3, numpy, `wave` | Dark-pixel counts that found the logo's ink bands, then the bed and six effects in `scripts/make-audio.py` |
+| vitest, `@emdash-cms/plugin-test`, the product's pnpm | The capture. Not installed in the video package |
+| Remotion 4.0.531, React 19 | The film. `@remotion/google-fonts` for Latin only |
+| `@emdash-cms/blocks`, `@phosphor-icons/react` | Real blocks and the admin's icon set |
 
 | Shot | Frames | What it shows |
 | --- | --- | --- |
@@ -53,14 +63,45 @@ The argument, one sentence: the same deterministic rules check a publish no matt
 
 ## Capture
 
-A test outside the product suite boots the real runtime per locale and writes one JSON file per screen with the test runner's file snapshot. The run is `npm run capture`. The story, through the host rather than mocks:
+Tools: vitest, through the product's pnpm, and `@emdash-cms/plugin-test`. The video package is installed with npm and does not depend on the test host. `npm run capture` leaves the video folder and runs the product's vitest:
 
-1. Load the empty dashboard.
-2. Submit the real rule form.
-3. Install a policy and an entry that fails it.
-4. Open the editor panel in the permissive mode, switch the mode through the real action, open the panel again.
-5. Run the check and the publish. Publish must return failure, with the product's own message.
-6. Fix the entry through the real update API and publish again. This step asserts success.
+```bash
+cd ../.. && pnpm exec vitest run --config video/launch/capture/vitest.config.ts -u
+```
+
+The config sets `root` to the product repository (three directories up from `capture/`) and registers `emdashPluginTest({ dir: repoRoot })`. `include` is only `video/launch/capture/**/*.capture.ts`. If the root is the video folder, the plugin builder cannot see the manifest. If `include` is left open, the product's own suite runs too.
+
+The test imports `createPluginRuntimeTestHost` and loops `en` and `ja`. Each iteration boots a host, disposes it in `afterEach`, and writes snapshots with:
+
+```ts
+expect(JSON.stringify(value, null, 2)).toMatchFileSnapshot(`../src/captured/${name}.json`);
+```
+
+`-u` regenerates those files. They are not edited by hand.
+
+The host is booted with both knobs, or the shell and the errors disagree:
+
+```ts
+createPluginRuntimeTestHost({
+  site: { name: "My Blog", locale },
+  i18n: { defaultLocale: locale, locales: [locale] },
+});
+```
+
+Fixtures and actions used, in order. These names are this product's. Another product has different ones.
+
+1. `fixtures.collection`, `fixtures.taxonomyDefinition`, and `fixtures.media` with a 1×1 PNG (`bytes` from a base64 data URL, `width: 1`, `height: 1`).
+2. `admin.loadPage("/dashboard", { locale })` for the empty dashboard.
+3. `admin.submit("/dashboard", "save_rule", fields, { locale })` for the real rule form.
+4. `fixtures.plugin.setting("policy", …)` and `fixtures.content` for a draft that fails the rules. The entry's `locale` is the content locale.
+5. `admin.loadEditorPanel("preflight", "posts", entry.id, { locale })` and another `loadPage` while the mode is observe.
+6. `admin.act("/dashboard", "enable_enforce", { locale })`, then the panel again.
+7. `transport.invokeRoute("check-entry", { collection, contentId })`, then `actions.content.publish`. The test asserts `success: false`.
+8. `fixtures.byline`, `fixtures.taxonomy` (slug, and the same locale as the entry), and a second media fixture that includes `alt`. Then `actions.content.update` with `bylines: [{ bylineId: byline.translationGroup ?? byline.id }]` and `taxonomies: { category: [term.slug] }`.
+9. `check-entry` again, `admin.actEditorPanel(…, "recheck", { locale })`, then `publish`. The test asserts `success: true`.
+10. `host.manifest.mcp?.tools` is saved too, so the chat shot's tool list is the manifest, not a typed-in name.
+
+Files written per locale: `dashboard-empty`, `dashboard-rule-saved`, `panel-observe`, `dashboard-observe`, `dashboard-enforce`, `panel-enforce`, `check-blocked`, `publish-rejected`, `check-passed`, `panel-passed`, `publish-accepted`, `manifest-tools`.
 
 What the capture got wrong, and the fix. The class of mistake is the lesson. The names are this product's.
 
@@ -71,7 +112,7 @@ What the capture got wrong, and the fix. The class of mistake is the lesson. The
 
 ## What was real
 
-The product surface is `@emdash-cms/blocks` `BlockRenderer` plus the admin package's compiled stylesheet, copied into the video package by the sync script. The wrapper sets `data-theme="kumo"` and `data-mode="light"`, and the font variable.
+The product surface is `@emdash-cms/blocks` `BlockRenderer` (pinned to the same admin version the product uses) plus the admin package's compiled stylesheet. The sync script does not import Tailwind. It finds the installed folder `node_modules/.pnpm/@emdash-cms+admin@0.42.0*` and copies `node_modules/@emdash-cms/admin/dist/styles.css` into `src/vendor/`. The wrapper sets `data-theme="kumo"` and `data-mode="light"`, and the font variable. Shell icons are `@phosphor-icons/react`, the set that admin uses. Latin type is `@remotion/google-fonts` with `subsets: ["latin"]`.
 
 The first composition was a throwaway still of the panel and the dashboard. Badges, table, form, and banner were confirmed before a scene existed.
 
@@ -99,7 +140,7 @@ The chat items share one frame array. That array also drives the pop cues. The t
 
 The file was 1448×1086, a mark above two words. Ink bands came from counting dark pixels per row. `cropdetect` returned nothing useful on the white field.
 
-Masks: the badge is a circle around its measured center, the dash is a rectangle, the frame is everything else in the mark crop. Word crops share one vertical origin and one scale. The horizontal offset is a constant next to the component (`PREFLIGHT_OFFSET`), not a measurement at render time.
+`scripts/sync-assets.mjs` runs ffmpeg `geq` on that file. Ink alpha is `clip((250-g(X,Y))*1.07,0,255)`. Masks, in source pixels: the badge is `lte(hypot(X-841,Y-524),79)`, the dash is `between(X,600,815)*between(Y,396,446)`, and the frame is `not(badge)*not(bar)` inside the mark crop `400:360:526:252`. Word crops share the vertical origin `673` (`580:150:180:673` and `490:150:785:673`). The horizontal offset is a constant next to the component (`PREFLIGHT_OFFSET`), not a measurement at render time.
 
 The frame scales in, the dash wipes, the badge pops and rotates around its own center. Layers were composited on orange to see fringes.
 

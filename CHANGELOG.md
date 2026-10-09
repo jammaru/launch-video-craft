@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-10-10
+
+- The worked example now includes the capture harness: vitest rooted at the product repo, the host calls in order, the snapshot helper, and the tools each step used.
+- Logo masks and crops from the sync script are recorded with the film they came from.
+
 ## 0.2.0 - 2026-10-10
 
 - One skill is distributed: `launch-video-method`.

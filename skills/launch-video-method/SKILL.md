@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
 ---
 
 # Launch videos in Remotion
@@ -90,7 +90,7 @@ Put every line of film copy (headlines, chat prompts, toast titles the product d
 
 ### 3. Capture
 
-Execute the shot sentences on the real test host, dev server, or a scripted browser. Save one JSON or HTML snapshot per screen per locale. Assert the outcome the film claims (rejected, then accepted), so a rerun cannot silently keep a failure.
+Execute the shot sentences on the real test host, dev server, or a scripted browser. Save one JSON or HTML snapshot per screen per locale. Assert the outcome the film claims (rejected, then accepted), so a rerun cannot silently keep a failure. The video package does not own that runner. A config next to the capture points its root at the product, and the script invokes the product's package manager. The harness from this film is in [example.md](example.md).
 
 The failures you hit here are research. Wrong id, wrong field shape, wrong locale. Fix the capture, record why in a comment, and rerun. Never patch the JSON by hand. The example records four of these, with that product's field names. The lesson is the class of mistake, not the names.
 
