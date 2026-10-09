@@ -62,8 +62,8 @@ def main() -> int:
     failures = []
     for name, needles in REQUIRED.items():
         skill = SKILLS / name
-        skill_md = (skill / "SKILL.md").read_text()
-        body = skill_md + "\n" + (skill / "reference.md").read_text()
+        skill_md = (skill / "SKILL.md").read_text(encoding="utf-8")
+        body = skill_md + "\n" + (skill / "reference.md").read_text(encoding="utf-8")
         meta = frontmatter(skill_md)
         if f"name: {name}" not in meta:
             failures.append(f"{name}: name does not match directory")
@@ -77,9 +77,11 @@ def main() -> int:
         for needle in needles:
             if needle not in body:
                 failures.append(f"{name}: missing {needle!r}")
-    plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text()
+    plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
     if '"version": "0.1.0"' not in plugin:
         failures.append("plugin.json version is not 0.1.0")
+    if '"skills": "./skills/"' not in plugin:
+        failures.append('plugin.json must set "skills": "./skills/"')
     logo = ROOT / "assets" / "logo.png"
     if not logo.is_file() or logo.stat().st_size < 1000:
         failures.append("assets/logo.png missing")
@@ -87,19 +89,12 @@ def main() -> int:
         data = logo.read_bytes()
         if data[25] != 6:
             failures.append("assets/logo.png is not RGBA (color type 6)")
-    for client in (".agents", ".claude", ".cursor", ".github"):
-        for name in REQUIRED:
-            link = ROOT / client / "skills" / name
-            if not link.is_symlink():
-                failures.append(f"{link.relative_to(ROOT)} is not a symlink")
-            elif not (link.resolve() / "SKILL.md").is_file():
-                failures.append(f"{link.relative_to(ROOT)} does not resolve to a skill")
     if failures:
         print(f"{len(failures)} failed")
         for item in failures:
             print(f"  - {item}")
         return 1
-    print(f"ok: {len(REQUIRED)} skills, logo alpha, {4} client links")
+    print(f"ok: {len(REQUIRED)} skills, logo alpha, plugin skills path")
     return 0
 
 

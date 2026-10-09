@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "launch-video-skills",
+  "description": "Claude Code marketplace for launch-video skills",
+  "owner": {
+    "name": "jammaru"
+  },
+  "plugins": [
+    {
+      "name": "launch-video-skills",
+      "description": "参考クリップのテンポに合わせ、実画面を使った Remotion ローンチ動画を作るスキル",
+      "version": "0.1.0",
+      "author": {
+        "name": "jammaru"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/jammaru/launch-video-skills",
+      "repository": "https://github.com/jammaru/launch-video-skills",
+      "license": "MIT"
+    }
+  ]
+}
