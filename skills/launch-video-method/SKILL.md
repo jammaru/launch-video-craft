@@ -10,12 +10,12 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Launch videos in Remotion
 
-The method for a short film (about 45–60 seconds, 1920×1080, 30fps) that feels like a reference clip and shows the real product. It is written so any model can follow it in order. Techniques, numbers, and commands are in [reference.md](reference.md). One finished film, with its capture script, timings, and the mistakes it made, is the `remotion-launch-video` skill. Read that as a worked example after this.
+The method for a short film (about 45–60 seconds, 1920×1080, 30fps) that feels like a reference clip and shows the real product. Follow the phases in order. Commands and starting numbers are in [reference.md](reference.md). One finished film, including the capture failures, the logo split, and the review that removed a shot's graphics twice, is in [example.md](example.md). Read the example after the phases. It is evidence. It is not the next film's script.
 
 ## Why this shape
 
@@ -84,13 +84,15 @@ A shape that works when the product has the pieces. A missing piece means skippi
 
 Order is the argument. Principles after the proof are a conclusion. Before it, they are an advertisement.
 
+The example's question, backdrop, and failure shape are that product's. Write this product's. A film that reuses them has not followed the method.
+
 Put every line of film copy (headlines, chat prompts, toast titles the product does not return) in one copy file keyed by locale. Product labels come from the product's real translations, not from you.
 
 ### 3. Capture
 
 Execute the shot sentences on the real test host, dev server, or a scripted browser. Save one JSON or HTML snapshot per screen per locale. Assert the outcome the film claims (rejected, then accepted), so a rerun cannot silently keep a failure.
 
-The failures you hit here are research. Wrong id, wrong field shape, wrong locale. Fix the capture, record why in a comment, and rerun. Never patch the JSON by hand.
+The failures you hit here are research. Wrong id, wrong field shape, wrong locale. Fix the capture, record why in a comment, and rerun. Never patch the JSON by hand. The example records four of these, with that product's field names. The lesson is the class of mistake, not the names.
 
 UI language and content language are separate settings. A translated shell with an untranslated error means only one was set.
 

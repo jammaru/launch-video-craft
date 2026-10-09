@@ -33,8 +33,6 @@ REQUIRED = {
         "I made",
         "real product output",
         "remove before adding",
-    ],
-    "remotion-launch-video": [
         "Who checks first?",
         "preflight__check_entry",
         "primaryBylineId",
@@ -45,6 +43,7 @@ REQUIRED = {
         "BlockRenderer",
         "0.1.1",
         "orange",
+        "Do not reuse",
     ],
 }
 
@@ -63,14 +62,14 @@ def main() -> int:
     for name, needles in REQUIRED.items():
         skill = SKILLS / name
         skill_md = (skill / "SKILL.md").read_text(encoding="utf-8")
-        body = skill_md + "\n" + (skill / "reference.md").read_text(encoding="utf-8")
+        body = "\n".join(path.read_text(encoding="utf-8") for path in sorted(skill.glob("*.md")))
         meta = frontmatter(skill_md)
         if f"name: {name}" not in meta:
             failures.append(f"{name}: name does not match directory")
         if "license: MIT" not in meta:
             failures.append(f"{name}: license is not MIT")
-        if 'version: "0.1.0"' not in meta:
-            failures.append(f"{name}: metadata.version is not 0.1.0")
+        if 'version: "0.2.0"' not in meta:
+            failures.append(f"{name}: metadata.version is not 0.2.0")
         hit = FORBIDDEN.search(body)
         if hit:
             failures.append(f"{name}: forbidden text {hit.group()!r}")
@@ -78,8 +77,8 @@ def main() -> int:
             if needle not in body:
                 failures.append(f"{name}: missing {needle!r}")
     plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
-    if '"version": "0.1.0"' not in plugin:
-        failures.append("plugin.json version is not 0.1.0")
+    if '"version": "0.2.0"' not in plugin:
+        failures.append("plugin.json version is not 0.2.0")
     if '"skills": "./skills/"' not in plugin:
         failures.append('plugin.json must set "skills": "./skills/"')
     logo = ROOT / "assets" / "logo.png"

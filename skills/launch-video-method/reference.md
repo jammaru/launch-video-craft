@@ -1,6 +1,6 @@
 # Techniques
 
-Reusable pieces for the phases in [SKILL.md](SKILL.md). None are tied to one product. When a product's test host or renderer has its own API, follow that API; the point here is what each step is for. Numbers are starting values that worked at 1920×1080, 30fps.
+Reusable pieces for the phases in [SKILL.md](SKILL.md). None are tied to one product. When a product's test host or renderer has its own API, follow that API; the point here is what each step is for. Numbers are starting values that worked at 1920×1080, 30fps. The finished film those values came from is [example.md](example.md). Use its numbers only when you are extending that film.
 
 ## Project
 

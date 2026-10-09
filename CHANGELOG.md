@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 - 2026-10-10
+
+- One skill is distributed: `launch-video-method`.
+- The finished-film record that was `remotion-launch-video` now lives in `skills/launch-video-method/example.md`.
+- The example states which of its facts must not be copied onto another product.
+
 ## 0.1.0 - 2026-10-09
 
 - First public package of the launch-video skills.

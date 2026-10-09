@@ -14,14 +14,21 @@
 
 ## これは何？
 
-エージェントに「いい感じの PV」と頼むと、参考動画の図形をなぞるか、UI を手描きするか、どちらかに寄りがちです。このパッケージは、その前に書くものと、その後の手順をスキルとして分けてあります。
+エージェントに「いい感じの PV」と頼むと、参考動画の図形をなぞるか、UI を手描きするか、どちらかに寄りがちです。このパッケージは、その前に書くものと、その後の手順を一つのスキルにまとめてあります。
 
 | スキル | 内容 |
 | --- | --- |
-| [`launch-video-method`](skills/launch-video-method/SKILL.md) | 製品に依存しない手順と判断の基準 |
-| [`remotion-launch-video`](skills/remotion-launch-video/SKILL.md) | 1 本のフィルムの実例（尺、キャプチャ、ロゴの切り出しなど） |
+| [`launch-video-method`](skills/launch-video-method/SKILL.md) | 手順と判断の基準。実例は同じスキルの [`example.md`](skills/launch-video-method/example.md) |
 
 スキル定義は [`skills/`](skills/) にだけ置きます。`npx skills add` や Claude Code プラグインはここを参照します。
+
+`example.md` は、1本のフィルムで手順がどうなったかの記録です。尺、キャプチャで詰まった箇所、ロゴの切り出し、レビューで二度削ったショットが入っています。別の製品では、その質問、背景、キャプチャ用 API、ショットの文言を写しません。写すのは判断です。
+
+以前 `remotion-launch-video` を入れている場合は、配布が一つになったので外します。
+
+```bash
+npx skills remove remotion-launch-video
+```
 
 ## インストール
 
@@ -40,14 +47,16 @@ npx skills add jammaru/launch-video-skills -g --all
 更新:
 
 ```bash
-npx skills update launch-video-method remotion-launch-video
+npx skills update launch-video-method
 ```
 
 ### 2. GitHub CLI
 
+`gh skill` は GitHub CLI 2.97 以降です。
+
 ```bash
 gh skill install jammaru/launch-video-skills --all --scope user
-gh skill update launch-video-method remotion-launch-video
+gh skill update launch-video-method
 ```
 
 ### 3. Claude Code プラグイン
@@ -75,18 +84,14 @@ launch-video-method に従って。
 
 そのあと、製品を動かして画面をキャプチャし、レンダラーで静止画を確認してからシーンを組み立てます。画面上の数字や文言は、手で書いた JSON にしません。
 
-[`remotion-launch-video`](skills/remotion-launch-video/SKILL.md) は手順の参考です。別の製品では、そのキャプチャ用 API やショットの文言をそのまま写しません。
-
 ## リポジトリ構成
 
 ```text
 .
-├── skills/                 # スキル本体（正本）
-│   ├── launch-video-method/
-│   └── remotion-launch-video/
-├── .claude-plugin/         # Claude Code プラグイン
+├── skills/launch-video-method/   # 正本。SKILL.md、reference.md、example.md
+├── .claude-plugin/               # Claude Code プラグイン
 ├── assets/logo.png
-└── scripts/check.py        # 公開前の静的チェック
+└── scripts/check.py              # 公開前の静的チェック
 ```
 
 ## ライセンス
