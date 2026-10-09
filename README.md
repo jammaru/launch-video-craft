@@ -20,19 +20,19 @@
 
 ### このスキルで作った動画の例
 
-リポジトリに同梱した mp4 をそのまま再生できます（GitHub 上でも表示されます）。
+GitHub は大きな mp4 をリポジトリから README に埋め込んで再生できません。下はホスト側の URL を直接参照しています。
 
 <p align="center">
-  <video src="assets/samples/emdash-preflight.mp4" controls width="720"></video>
+  <video src="https://video.twimg.com/amplify_video/2105501376520589313/vid/avc1/1920x1080/04bvcuJ5p0i0PmKB.mp4?tag=29" controls width="720"></video>
 </p>
 <p align="center">EmDash Preflight（1920×1080）</p>
 
 <p align="center">
-  <video src="assets/samples/chatgpt.mp4" controls width="720"></video>
+  <video src="https://video.twimg.com/amplify_video/2108406306143133696/vid/avc1/1920x1080/3LP89dASD25f0wNv.mp4?tag=29" controls width="720"></video>
 </p>
 <p align="center">ChatGPT（1920×1080）</p>
 
-ダウンロード: [emdash-preflight.mp4](assets/samples/emdash-preflight.mp4) · [chatgpt.mp4](assets/samples/chatgpt.mp4)
+mp4: [EmDash Preflight](https://video.twimg.com/amplify_video/2105501376520589313/vid/avc1/1920x1080/04bvcuJ5p0i0PmKB.mp4?tag=29) · [ChatGPT](https://video.twimg.com/amplify_video/2108406306143133696/vid/avc1/1920x1080/3LP89dASD25f0wNv.mp4?tag=29)
 
 ## インストール
 
@@ -94,9 +94,7 @@ launch-video-method に従って。
 .
 ├── skills/launch-video-method/   # SKILL.md、reference.md、example.md
 ├── .claude-plugin/               # Claude Code プラグイン
-├── assets/
-│   ├── logo.png
-│   └── samples/                  # README 用サンプル動画
+├── assets/logo.png
 └── scripts/check.py              # 公開前の静的チェック
 ```
 
