@@ -1,3 +1,4 @@
 .DS_Store
 *.log
 assets/samples/*.mp4
+!assets/samples/*-preview.mp4
