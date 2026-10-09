@@ -41,69 +41,64 @@
 
 ## 導入
 
-クライアントは見る場所が違います。このリポジトリを開いている間は、下のリンクのどれかをそのクライアントが読みます。
+このリポジトリは private です。`npx skills` も `gh skill` も、すでに通っている GitHub の認証で clone します。公開後もコマンドは同じです。
 
-| クライアント | このリポジトリ内 | ユーザー全体に置く場合 |
-| --- | --- | --- |
-| Codex、その他 `.agents` を読むもの | `.agents/skills/` | `~/.agents/skills/` |
-| Claude Code | `.claude/skills/` またはプラグイン | `~/.claude/skills/` |
-| Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
-| GitHub Copilot（リポジトリの skills を読む場合） | `.github/skills/` | クライアントの指定する skills ディレクトリ |
-
-### リポジトリを開く
+すべてのエージェントへ、このプロジェクトの中に入れる場合:
 
 ```bash
-git clone <this-repo> launch-video-skills
-cd launch-video-skills
+npx skills add jammaru/launch-video-skills --all
 ```
 
-リンクが展開されない環境では、次で作り直します。
+すべてのプロジェクトから使う場合は `-g` を付けます。
 
 ```bash
-./scripts/link-skills.sh
+npx skills add jammaru/launch-video-skills -g --all
 ```
 
-### 今のユーザーの skills にコピーする
-
-ホームへコピーすると、他のプロジェクトからも使えます。更新するときは同じコマンドをもう一度実行します。コピー先にある同名ディレクトリは置き換わります。
+一つのスキルだけ、またはエージェントを指定する場合:
 
 ```bash
-./scripts/install.sh all          # cursor, claude, codex
-./scripts/install.sh cursor
-./scripts/install.sh claude
-./scripts/install.sh codex
-./scripts/install.sh ~/some/skills
+npx skills add jammaru/launch-video-skills --list
+npx skills add jammaru/launch-video-skills --skill launch-video-method -a cursor -a claude-code -a codex
 ```
 
-### Claude Code のプラグイン
-
-マニフェストは `.claude-plugin/plugin.json` です。スキルは `skills/` にあります。
+GitHub CLI では同じリポジトリを次で入れます。`gh skill` は GitHub CLI 2.97 以降です。
 
 ```bash
-claude --plugin-dir /path/to/launch-video-skills
+gh skill install jammaru/launch-video-skills --all --scope user
+gh skill install jammaru/launch-video-skills launch-video-method --agent cursor --scope project
+gh skill install jammaru/launch-video-skills launch-video-method@v0.1.0
 ```
 
-セッション中にディレクトリから読み込む場合は、Claude Code の `/plugin` でこのディレクトリをローカルプラグインとして追加します。スキル名は `launch-video-skills:launch-video-method` のようにプラグイン名が前に付きます。
-
-### 一つのスキルだけ
-
-`skills/launch-video-method` を、使っているクライアントの skills ディレクトリに置きます。ディレクトリ名と `SKILL.md` の `name` は同じにしてください。`remotion-launch-video` は実例なので、方法だけ欲しい場合は外して構いません。
+`--agent` には `cursor`、`claude-code`、`codex`、`github-copilot` などを指定します。プロジェクトスコープでは、複数のエージェントが `.agents/skills` を共有します。
 
 ## 更新する
 
-バージョンは三箇所で揃えます。
+インストールした側:
+
+```bash
+npx skills update
+npx skills update -g
+npx skills update launch-video-method remotion-launch-video
+
+gh skill update --all
+```
+
+`npx skills update` は、`skills add` が書いたロックファイルの出典を取り直します。プロジェクトに入れた分は `npx skills update -p`、ユーザー全体に入れた分は `-g` です。
+
+配布側で版を上げるときは、次を揃えてからタグを打ちます。
 
 - `skills/*/SKILL.md` の `metadata.version`
 - `.claude-plugin/plugin.json` の `version`
 - `CHANGELOG.md`
 
-手順は次のとおりです。
+```bash
+python3 scripts/check.py
+git tag v0.1.1
+gh release create v0.1.1 --generate-notes
+```
 
-1. `CHANGELOG.md` に、なぜ変えたかを書く。
-2. 上の三箇所のバージョンを上げる。
-3. `python3 scripts/check.py` を実行する。個人のパスが混ざっていないこと、必須の節があることを見ます。
-4. スキル本文を評価で直す場合は、`evals/README.md` の手順で結果を残してから直す。評価の実行そのものはスキルを書き換えません。
-5. ホームにコピーして使っている人は `./scripts/install.sh all` をやり直す。clone で使っている人は `git pull` です。
+`gh skill install ...@v0.1.1` はそのタグを取ります。`--pin` を付けて入れたスキルは、`gh skill update` では動きません。
 
 ## 評価
 
@@ -123,7 +118,7 @@ Two Agent Skills for a short Remotion launch film. `launch-video-method` is the 
 
 Give the agent a reference clip, a logo file, and the locales. It should write a borrow list, a do-not-draw list, a beat map, and one sentence per shot before it opens a scene. On-screen product text comes from running the product.
 
-Install by opening this repository, by `./scripts/install.sh all`, or by pointing Claude Code at it with `--plugin-dir`. Update by bumping `metadata.version`, `plugin.json`, and `CHANGELOG.md` together, then re-running the install script if you copied the skills into a home directory.
+Install with `npx skills add jammaru/launch-video-skills --all`, or `npx skills add jammaru/launch-video-skills -g --all` for every project. Update with `npx skills update`. GitHub CLI 2.97 and later can do the same with `gh skill install jammaru/launch-video-skills --all` and `gh skill update --all`. The repository is private, so the command uses your existing GitHub login. A release tag such as `v0.1.0` is what `gh skill install ...@v0.1.0` fetches.
 
 Check the package with `python3 scripts/check.py`. Prompt evals live in `evals/`. An eval run records a result. It does not edit the skills.
 
