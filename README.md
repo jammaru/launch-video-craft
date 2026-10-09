@@ -22,7 +22,7 @@
 
 | EmDash Preflight | ChatGPT |
 | :---: | :---: |
-| ![EmDash Preflight](assets/samples/emdash-preflight.webp) | ![ChatGPT](assets/samples/chatgpt.webp) |
+| [![EmDash Preflight](assets/samples/emdash-preflight.webp)](https://x.com/jammaru_lab/status/2105501576437678510?s=20) | [![ChatGPT](assets/samples/chatgpt.webp)](https://x.com/jammaru_lab/status/2108406681839554662?s=20) |
 
 ## インストール
 
