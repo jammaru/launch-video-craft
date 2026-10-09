@@ -1,23 +1,31 @@
 <p align="center">
-  <img src="assets/logo.png" alt="" width="160">
+  <img src="assets/logo.png" alt="Launch Video Skills" width="220">
 </p>
 
-# Launch Video Skills
+<h1 align="center">Launch Video Skills</h1>
 
-参考クリップのテンポに合わせて、実際の製品画面を使った短いローンチ動画を Remotion で作る Agent Skill です。
+<p align="center">
+  参考クリップのテンポに合わせ、実際の製品画面を使った短いローンチ動画を Remotion で作る Agent Skill です。
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+</p>
 
 ## これは何？
 
+エージェントに「いい感じの PV」と頼むと、参考動画の図形をなぞるか、UI を手描きするか、どちらかに寄りがちです。このパッケージは、その前に書くものと、その後の手順をスキルとして分けてあります。
+
 | スキル | 内容 |
 | --- | --- |
-| `launch-video-method` | 製品に依存しない手順と判断の基準 |
-| `remotion-launch-video` | 1本のフィルムの実例（尺、キャプチャ、ロゴの切り出しなど） |
+| [`launch-video-method`](skills/launch-video-method/SKILL.md) | 製品に依存しない手順と判断の基準 |
+| [`remotion-launch-video`](skills/remotion-launch-video/SKILL.md) | 1 本のフィルムの実例（尺、キャプチャ、ロゴの切り出しなど） |
 
-スキル定義は `skills/` にだけ置きます。
+スキル定義は [`skills/`](skills/) にだけ置きます。`npx skills add` や Claude Code プラグインはここを参照します。
 
 ## インストール
 
-### `npx skills add`（推奨）
+### 1. `npx skills add`（推奨）
 
 ```bash
 npx skills add jammaru/launch-video-skills --all
@@ -35,14 +43,14 @@ npx skills add jammaru/launch-video-skills -g --all
 npx skills update launch-video-method remotion-launch-video
 ```
 
-### GitHub CLI
+### 2. GitHub CLI
 
 ```bash
 gh skill install jammaru/launch-video-skills --all --scope user
 gh skill update launch-video-method remotion-launch-video
 ```
 
-### Claude Code プラグイン
+### 3. Claude Code プラグイン
 
 ```text
 /plugin marketplace add jammaru/launch-video-skills
@@ -59,12 +67,28 @@ Remotion で。動画プロジェクトは gitignore。
 launch-video-method に従って。
 ```
 
-エージェントは、シーンを組み立てる前に次の3点を書きます。参考クリップから借りるテンポと借りない図形。参考の各場面と製品の動作の対応表。各ショットで画面に示す一文。
+エージェントは、シーンを組み立てる前に次の 3 点を書きます。
+
+1. 参考クリップから借りるテンポと、借りない図形
+2. 参考の各場面と製品の動作の対応表
+3. 各ショットで画面に示す一文
 
 そのあと、製品を動かして画面をキャプチャし、レンダラーで静止画を確認してからシーンを組み立てます。画面上の数字や文言は、手で書いた JSON にしません。
 
-`remotion-launch-video` は手順の参考です。別の製品では、そのキャプチャ用 API やショットの文言をそのまま写しません。
+[`remotion-launch-video`](skills/remotion-launch-video/SKILL.md) は手順の参考です。別の製品では、そのキャプチャ用 API やショットの文言をそのまま写しません。
+
+## リポジトリ構成
+
+```text
+.
+├── skills/                 # スキル本体（正本）
+│   ├── launch-video-method/
+│   └── remotion-launch-video/
+├── .claude-plugin/         # Claude Code プラグイン
+├── assets/logo.png
+└── scripts/check.py        # 公開前の静的チェック
+```
 
 ## ライセンス
 
-[MIT](LICENSE)
+[MIT](LICENSE) — Copyright (c) 2026 [jammaru](https://github.com/jammaru)
