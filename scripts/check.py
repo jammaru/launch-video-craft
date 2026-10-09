@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Static checks for the published skills. Exits 0 when every check passes."""
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SKILLS = ROOT / "skills"
+
+FORBIDDEN = re.compile(
+    r"/Users/|/home/[A-Za-z0-9._-]+/|\\\\Users\\\\|Documents[/\\\\]product|did:plc|"
+    r"this Mac|this machine",
+    re.I,
+)
+
+REQUIRED = {
+    "launch-video-method": [
+        "timing diagram",
+        "Do not draw",
+        "Beat map",
+        "one true sentence",
+        "failure first",
+        "rejected, then accepted",
+        "type alone",
+        "Three layers",
+        "Portals do not render",
+        "dark pixels",
+        "cropdetect",
+        "Hiragino",
+        "15 frames",
+        "placeholders",
+        "I made",
+        "real product output",
+        "remove before adding",
+    ],
+    "remotion-launch-video": [
+        "Who checks first?",
+        "preflight__check_entry",
+        "primaryBylineId",
+        "PREFLIGHT_OFFSET",
+        "dialogVariants",
+        "type only",
+        "Noto Sans JP",
+        "BlockRenderer",
+        "0.1.1",
+        "orange",
+    ],
+}
+
+
+def frontmatter(text: str) -> str:
+    if not text.startswith("---\n"):
+        raise ValueError("missing frontmatter")
+    end = text.find("\n---\n", 4)
+    if end < 0:
+        raise ValueError("unclosed frontmatter")
+    return text[4:end]
+
+
+def main() -> int:
+    failures = []
+    for name, needles in REQUIRED.items():
+        skill = SKILLS / name
+        skill_md = (skill / "SKILL.md").read_text()
+        body = skill_md + "\n" + (skill / "reference.md").read_text()
+        meta = frontmatter(skill_md)
+        if f"name: {name}" not in meta:
+            failures.append(f"{name}: name does not match directory")
+        if "license: MIT" not in meta:
+            failures.append(f"{name}: license is not MIT")
+        if 'version: "0.1.0"' not in meta:
+            failures.append(f"{name}: metadata.version is not 0.1.0")
+        hit = FORBIDDEN.search(body)
+        if hit:
+            failures.append(f"{name}: forbidden text {hit.group()!r}")
+        for needle in needles:
+            if needle not in body:
+                failures.append(f"{name}: missing {needle!r}")
+    plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text()
+    if '"version": "0.1.0"' not in plugin:
+        failures.append("plugin.json version is not 0.1.0")
+    logo = ROOT / "assets" / "logo.png"
+    if not logo.is_file() or logo.stat().st_size < 1000:
+        failures.append("assets/logo.png missing")
+    else:
+        data = logo.read_bytes()
+        if data[25] != 6:
+            failures.append("assets/logo.png is not RGBA (color type 6)")
+    for client in (".agents", ".claude", ".cursor", ".github"):
+        for name in REQUIRED:
+            link = ROOT / client / "skills" / name
+            if not link.is_symlink():
+                failures.append(f"{link.relative_to(ROOT)} is not a symlink")
+            elif not (link.resolve() / "SKILL.md").is_file():
+                failures.append(f"{link.relative_to(ROOT)} does not resolve to a skill")
+    if failures:
+        print(f"{len(failures)} failed")
+        for item in failures:
+            print(f"  - {item}")
+        return 1
+    print(f"ok: {len(REQUIRED)} skills, logo alpha, {4} client links")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

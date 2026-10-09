@@ -1,0 +1,55 @@
+{
+  "package": "launch-video-skills",
+  "version": "0.1.0",
+  "notes": "Each prompt is given to an agent that may read only skills/launch-video-method and skills/remotion-launch-video. The agent writes a plan. It does not render a film, and it does not edit the skills. Grade the plan against expectations. Record the result under evals/runs/. Do not change the skills from the grade.",
+  "evals": [
+    {
+      "id": "chatgpt-intro",
+      "prompt": "Make a launch film that introduces ChatGPT. Use only the launch-video-method skill and, where a concrete instance helps, the remotion-launch-video skill. A reference clip is a 40 second product promo: windows sitting on a landscape, a large cursor, zooms into clicks, then a black field of colorful geometric shapes, ending on a logo lockup. No logo file has been supplied yet. Do not render the video. Write the production plan you would follow before opening a scene file: what you borrow, what you refuse to draw, the beat map, the one-sentence argument, one sentence per shot, how you would capture real ChatGPT UI, how you would treat a logo when it arrives, and what you would report at the end.",
+      "expected_output": "A written plan that follows the method's order and does not invent ChatGPT's UI.",
+      "expectations": [
+        "Names specific reference motifs that will not be drawn, including the colorful geometry",
+        "Has a beat map from reference beats to ChatGPT behaviors",
+        "States one demonstrable argument",
+        "Lists shot sentences in an order where the name comes after the problem and principles come after a proof",
+        "Drops a beat that has no honest ChatGPT equivalent instead of faking it",
+        "Plans to capture real ChatGPT UI, and says what cannot be captured from source because ChatGPT is not a local component library",
+        "Does not invent the sentences inside the product UI",
+        "Treats a future logo as one flattened picture, splits only parts that already have their own shape, and shows it twice",
+        "Refuses to stamp the logo through other shots",
+        "Plans a generated backdrop rather than a frame from the reference",
+        "Uses a beat grid and measured clicks rather than guessed pixels",
+        "Keeps the Remotion project out of any product lockfile",
+        "The end report separates real, rebuilt, invented, and unchecked",
+        "Contains no personal filesystem path"
+      ]
+    },
+    {
+      "id": "looks-like-the-reference",
+      "prompt": "A principles shot in a launch film copies the reference clip's colored circles, corner squares, and dashed frames on black. The user says it looks too much like the reference. What do you change, and what do you refuse to put in its place? Do not render.",
+      "expected_output": "Keep the shot length. Remove the borrowed graphics. Do not replace them with repeated logos.",
+      "expectations": [
+        "Keeps the timing or the shot length",
+        "Deletes the borrowed shapes",
+        "Allows the shot to be type alone",
+        "Refuses to fill the space by repeating the product logo",
+        "Does not redraw the reference's geometry in the product's colors"
+      ]
+    },
+    {
+      "id": "logo-arrives",
+      "prompt": "A flattened PNG arrives as the logo: a mark above two words, on white. Explain how you decide what may move, how you find the regions, how you check the cut, and in which shots the logo appears. Do not render.",
+      "expected_output": "A procedure that measures pixels, splits only existing shapes, and limits the logo to two appearances.",
+      "expectations": [
+        "Does not treat the file as pre-separated layers",
+        "Separates the mark from the words",
+        "Moves only pieces that already have their own shape",
+        "Finds regions by counting dark pixels, and does not trust cropdetect on white",
+        "Checks the cut on a strong color rather than on white",
+        "Keeps the words on one baseline",
+        "Animates the assembly once, and shows the assembled logo once on the end card",
+        "Does not scatter the mark as decoration"
+      ]
+    }
+  ]
+}

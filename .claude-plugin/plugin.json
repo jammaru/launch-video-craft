@@ -1,0 +1,8 @@
+{
+  "name": "launch-video-skills",
+  "displayName": "Launch Video Skills",
+  "description": "Make a product launch film in Remotion from a reference clip's pacing and the product's real UI.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "keywords": ["remotion", "launch-video", "motion-graphics", "skills"]
+}
