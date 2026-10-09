@@ -20,22 +20,9 @@
 
 ### このスキルで作った動画の例
 
-README ではリポジトリ内のプレビュー（720p・音声なし）を再生します。1080p はサムネイルまたは下のリンクから開けます。
-
-<table align="center">
-  <tr>
-    <td align="center">
-      <video src="assets/samples/emdash-preflight-preview.mp4" controls width="360" poster="assets/samples/emdash-preflight.jpg"></video><br>
-      <sub>EmDash Preflight</sub>
-    </td>
-    <td align="center">
-      <video src="assets/samples/chatgpt-preview.mp4" controls width="360" poster="assets/samples/chatgpt.jpg"></video><br>
-      <sub>ChatGPT</sub>
-    </td>
-  </tr>
-</table>
-
-1080p mp4: [EmDash Preflight](https://video.twimg.com/amplify_video/2105501376520589313/vid/avc1/1920x1080/04bvcuJ5p0i0PmKB.mp4?tag=29) · [ChatGPT](https://video.twimg.com/amplify_video/2108406306143133696/vid/avc1/1920x1080/3LP89dASD25f0wNv.mp4?tag=29)
+| EmDash Preflight | ChatGPT |
+| :---: | :---: |
+| ![EmDash Preflight](assets/samples/emdash-preflight.webp) | ![ChatGPT](assets/samples/chatgpt.webp) |
 
 ## インストール
 
@@ -97,7 +84,7 @@ launch-video-method に従って。
 .
 ├── skills/launch-video-method/   # SKILL.md、reference.md、example.md
 ├── .claude-plugin/               # Claude Code プラグイン
-├── assets/                       # logo、README 用 samples（jpg・*-preview.mp4）
+├── assets/
 └── scripts/check.py              # 公開前の静的チェック
 ```
 
