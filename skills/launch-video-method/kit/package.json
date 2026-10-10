@@ -12,7 +12,9 @@
     "still": "remotion still src/index.ts",
     "verify": "node scripts/verify.mjs",
     "draft": "remotion render src/index.ts Launch /tmp/launch-draft.mp4 --scale=0.5 --log=error",
-    "render": "node scripts/gate.mjs && remotion render src/index.ts Launch ../launch.mp4"
+    "render": "node scripts/gate.mjs && remotion render src/index.ts Launch ../launch.mp4 && node scripts/inspect.mjs ../launch.mp4",
+    "inspect": "node scripts/inspect.mjs ../launch.mp4",
+    "finish": "node scripts/gate.mjs && node scripts/finish.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.531",

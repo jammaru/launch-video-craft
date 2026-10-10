@@ -53,7 +53,18 @@ ffmpeg -ss 12 -t 3 -i ref.mp4 -vf "fps=6,scale=480:-1,tile=6x3" -frames:v 1 move
 
 If the clip URL is behind a proxy page, download the media URL it wraps, not the page.
 
-Write three lists in the project's notes before coding:
+First write what the reference is and how this product fits it, as roles, not pictures:
+
+| Reference scene | What it is for | In this product |
+| --- | --- | --- |
+| A phone rises with the app open | shows the product exists where you are | the playground, or the terminal for a CLI |
+| A prompt is typed, the agent works | shows the main gesture and its result | the one command, or the one prompt to an agent |
+| A second device picks up the task | shows a second way in | drop, if the product has one way in |
+| Logo and tagline | names it | the name shot |
+
+Then add the roles this product needs that the reference lacks, and drop the ones it cannot honestly fill. The reference's length and shot count are not targets.
+
+Then three lists before coding:
 
 | Borrow | Do not draw | Beat map |
 | --- | --- | --- |
@@ -121,9 +132,48 @@ const env = {
 
 Tools for the rest of the film, used as command-line programs rather than as libraries inside the scenes: ffmpeg (contact sheets, logo split, `ffprobe`, loudness), python3 with numpy (pixel counts and the synthesized bed; the standard-library `wave` module writes the files), and the product's own package manager for the capture. Remotion renders. The backdrop is generated, not cut from the reference.
 
-## Proving the renderer
+## Showing the real UI
 
-Find the compiled CSS the app serves (`dist/styles.css` or the built asset), not a Tailwind source entry. Copy it in the sync script and import it once. Wrap the surface in the theme attributes the CSS expects (`data-theme`, `data-mode`, a font variable). Render one still. Compare it with a screenshot of the real app. Then build scenes.
+The window shows the product's own UI, and `npm run verify` checks it. Reading the product's renderer and stylesheet and then writing your own JSX that looks like it is a lookalike: one film rebuilt a playground's result cards as tabs that do not exist in the product, another kept the product's CSS but rebuilt the markup. Both passed every other check. Measured against a screenshot of the real page, their windows scored 0.07 and 0.14; the real page scores about 0.8 or more.
+
+Decide by what the product ships:
+
+| The product ships | The window shows | `window.real` |
+| --- | --- | --- |
+| A web page it builds to static files (a playground, a demo, a dashboard that runs without a server) | that build, in `<ProductFrame>` | `{ screenshot: "capture/real/<Shot>.png" }` |
+| React components and compiled CSS for an app that needs a server | the components, imported, with the shipped CSS from `src/vendor/` and captured data | `{ capture: "src/captured/<file>.json" }` |
+| A command, a library, an agent skill | `Terminal` or the agent chat, with captured output | `{ capture: "src/captured/<file>.json" }` |
+
+**A web page the product builds.** Run the product's own build (with a relative base, such as vite's `base: "./"`, so the page loads from a subfolder). In `capture/`, call `shootProduct`:
+
+```js
+import { shootProduct } from "./lib.mjs";
+await shootProduct({
+  dist: "../../.product/<name>/packages/playground/dist",
+  shots: { Playground: { path: "index.html", hash: "" } },   // the state the window lands on
+});
+```
+
+It copies the build to `public/product/`, serves the same files to the headless browser Remotion installed, and screenshots each shot's state at the window body's size (1620×889) into `capture/real/<Shot>.png`. In the scene:
+
+```tsx
+import { byText, bySelector, ProductFrame, productPage, useProduct } from "../components/ProductFrame";
+
+const find = { gemini: byText(".overview-item", "Gemini"), cards: bySelector(".target-overview") };
+
+const product = useProduct({ src: productPage("index.html", hash), find });
+const boxAt = (name: string) => stageBox(product.boxes[name]);
+// camera, cursor, assertFraming exactly as with useAnchors, with ready: product.ready
+<Window title="…"><ProductFrame product={product} /></Window>
+```
+
+`useProduct` holds the frame until the page, its fonts, and every `find` are ready, measures inside the page before `continueRender`, and turns off the page's CSS transitions so every frame is settled. A `find` that matches nothing fails the render. Anchors are the product's own markup: its classes and its text; nothing is added to the product.
+
+State comes from the frame, never from a click sent into the page: a frame is a fresh page. If the page keeps state in its URL, pass it as `hash`. Otherwise `prepare(doc, win)` drives the page's own controls before measuring (choose an example in its select, click its tab). For a change the viewer sees, mount one `useProduct` per state and switch with `visibility` at the result frame. Hide the product's demo chrome with the camera, not by editing its page.
+
+`npm run verify` renders the landed frame (window at rest, camera at scale 1) and compares the window body with the screenshot (`scripts/similar.py`, edge match 0.5 or more). It also fails when a scene draws a `Window` without `window.real`, when a screenshot shot does not use `useProduct` and `<ProductFrame>`, and when a `capture` shot does not import its capture file or renders it outside `Terminal`, the chat, or the shipped CSS. The window lands in the state that was shot; a later state is reached by the film.
+
+**Components and CSS.** Find the compiled CSS the app serves (`dist/styles.css` or the built asset), not a Tailwind source entry. Copy it in the sync script and import it once. Wrap the surface in the theme attributes the CSS expects (`data-theme`, `data-mode`, a font variable). Render one still and put it beside a screenshot of the real app. Then build scenes.
 
 ## Shell, portals, toasts
 
@@ -142,7 +192,7 @@ import { assertBeats } from "../lib/beats";
 export const beats = assertBeats("PublishBlocked", {
   duration: 330,
   headline: { in: 2, out: 36, words: 6 },
-  window: { in: 40, landed: 70 },
+  window: { in: 40, landed: 70, real: { screenshot: "capture/real/PublishBlocked.png" } },
   actions: [
     { name: "publish", target: "publish", resultTarget: "toast", camera: 112, cursor: 110, press: 118, result: 126, resultCamera: 168, holdUntil: 214, scale: 2.1, proves: true },
   ],
@@ -169,9 +219,15 @@ export type Action = {
 export type Beats = {
   duration: number;
   headline?: { in: number; out: number; words: number };
-  window?: { in: number; landed: number };
+  window?: { in: number; landed: number; real: Real };
   actions: Action[];
 };
+/**
+ * What the window shows, and where it came from. A web page the product builds: the screenshot
+ * shootProduct took of it, compared with the landed frame by npm run verify. A terminal, an agent,
+ * or an app that needs a server: the captured JSON file the scene renders.
+ */
+export type Real = { screenshot: string } | { capture: string };
 
 export function assertBeats(id: string, b: Beats): Beats {
   const errors: string[] = [];
@@ -182,6 +238,7 @@ export function assertBeats(id: string, b: Beats): Beats {
     if (h.out - h.in < need) fail(`headline is up ${h.out - h.in} frames; needs ${need}`);
   }
   if (h && w && w.in < h.out) fail(`window rises at ${w.in}, while the headline is read until ${h.out}`);
+  if (w && !w.real) fail(`the window shows the product; name where it came from (window.real: the screenshot shootProduct took, or the captured JSON)`);
   if (w && w.landed - w.in > 36) fail(`window takes ${w.landed - w.in} frames to land; use a stiffer spring`);
   const proof = b.actions.find((a) => a.proves) ?? b.actions[0];
   if (h && proof && proof.result - h.out > 90 + 12) fail(`${proof.name}: what the headline names shows at ${proof.result}, ${proof.result - h.out} frames after it leaves (${h.out})`);
@@ -315,11 +372,7 @@ y = winY + bar + rect.cy - scroll + dy
 
 A full-width banner's center is the middle of the page, not its sentence. Offset toward the text (`-width / 2` plus a margin).
 
-**An iframe is the last resort.** Render the product's components in the film's own DOM. If the only way to show the surface is to load the product's page in an `<iframe>`:
-
-- Measure inside the frame in the same `delayRender` that waits for its `load`, and call `continueRender` only after the boxes are stored. Storing them in state after `continueRender` means some frames render before the boxes exist, which is where fallback coordinates get used.
-- Each frame is rendered in a fresh page, possibly out of order. A click sent into the iframe on frame 120 does not exist on frame 121. Derive the product's state from the frame: put it in the URL (`?step=2`, `#gemini`) and set `src` from the beat sheet, or render each state as its own iframe and switch with `visibility`.
-- Remove the product's demo or capture-mode chrome (a banner saying "capture mode", a debug summary, a step list for screenshots). Add a query flag the page reads to hide it, or crop it out with the camera. A summary line that prints the answer before the shot shows it gives the shot away.
+**The product's page, measured.** `useProduct` (above) measures inside the page in the same `delayRender` that waits for its `load`, so no frame renders before the boxes exist. Each frame is rendered in a fresh page, possibly out of order: a click sent into the page on frame 120 does not exist on frame 121. Derive the state from the frame (a `hash`, or `prepare`) and switch states with `visibility`. Keep the product's demo or capture-mode chrome (a banner, a debug summary) out of the frame with the camera. A summary line that prints the answer before the shot shows it gives the shot away.
 
 ## Framing check
 
@@ -333,7 +386,10 @@ A full-width banner's center is the middle of the page, not its sentence. Offset
 | Product, not backdrop | a zoomed view at the press or on the result is more than 10% backdrop outside the window |
 | Readable | the result is larger than the view, cut by the frame (8px margin), or fills under 35% of the view's width and height |
 | Still | the result moves more than 6px while the camera holds it (a scroll that did not stop) |
-| Uncovered | the cursor sits on the result after the press |
+| Zoomed hold | the camera is under scale 1.4 while the result is held |
+| Clean edges | a held frame (rendered without the overlay) has type cut by its top, bottom, left, or right edge (`scripts/edges.py`) |
+| Uncovered | the cursor sits on the result after the press, or is still in view once the camera is on the result |
+| Real UI | a `Window` without `window.real`; a screenshot shot not drawn with `ProductFrame`, or whose landed window body matches the screenshot under 0.5 (`scripts/similar.py`); a capture shot that does not import its capture (verify, not `assertFraming`) |
 
 Errors name the coordinates (`the cursor presses at (408, 297), 113px off "prompt-ps1" (186, 165, 190×24)`), so the fix is arithmetic, not guessing. Do not loosen a check to pass it; fix the anchor, the camera, or the timing.
 
@@ -375,13 +431,15 @@ Load Latin from `@remotion/google-fonts` with `subsets: ["latin"]` and only the 
 
 Generate, never copy. The photograph is only the world behind the product windows. Hook, logo, principles, and end card do not use it.
 
+The prompt is a place and a light, nothing else. Words in the prompt end up painted in the picture: "backdrop photograph for <product> launch video" gives a sky with the product's name in it, or a billboard. Leave out the product's name and every word about software, launches, or video.
+
 Do not generate rolling green hills with yellow and white wildflowers. That place is the worked example's, and a later film copied it onto every shot.
 
 Keep the structure, change the place:
 
-> Wide 16:9 photograph of [a place that fits this product], the subject in the lower third, a large empty sky, soft daylight, no people, no text, no logos.
+> Wide 16:9 landscape photograph of [a natural place: a coastline, a dune field, a lake under mountains, a moor], the land in the lower third, a large empty sky, [soft morning light], no people, no buildings, no signs, no writing.
 
-Save as JPEG around 1920px wide.
+Save as JPEG around 1920px wide. Open it at full size. Any letter, sign, logo, screen, or person means generate again; `npm run verify` fails on writing that tesseract can read. Write what you saw as the "Backdrop" line under "Film checked".
 
 ## Logo layers
 
@@ -403,7 +461,7 @@ format=rgba,geq=r='0':g='0':b='0':a='clip((250-g(X,Y))*1.07,0,255)*MASK',crop=W:
 
 Composite all layers on a strong color and look. Fringes or missing strokes show there, not on white.
 
-Word crops share one vertical origin and one scale. Store the horizontal offset between them as a constant.
+Word crops share one vertical origin and one scale. Store the horizontal offset between them as a constant. Simplest: keep every layer on the full canvas and draw them all with `LogoLayers` (kit/src/components/Logo.tsx), so there is no offset to store.
 
 Animate: frame scales 0.6 → 1 with a spring, bar wipes with `clip-path: inset(0 X% 0 0)`, badge springs from 0 and rotates from about -120° around its own center (`transform-origin` at the badge center inside the crop). Words rise into an overflow-hidden line, the second about 6 frames after the first.
 
@@ -419,7 +477,7 @@ Regenerate the bed when any duration changes.
 
 ## Review and repair
 
-`npm run verify` first, after every change to a scene, a beat sheet, or a capture. Open each `review/<Shot>-sheet.png`. The machine checks catch a miss by coordinates; the sheet is where you see a frame that is legal and still wrong (the camera on an empty half of the window, a banner from the product's demo mode, a card whose header is cut). Then the draft film:
+`npm run verify` first, after every change to a scene, a beat sheet, or a capture. After the delivery render, `npm run inspect` (run by `npm run render`) does the same for the finished mp4, and `npm run finish` is the last check before the user sees it. Open each `review/<Shot>-sheet.png`. The machine checks catch a miss by coordinates; the sheet is where you see a frame that is legal and still wrong (the camera on an empty half of the window, a banner from the product's demo mode, a card whose header is cut). Then the draft film:
 
 ```bash
 npx remotion render src/index.ts <Film> /tmp/draft.mp4 --scale=0.5 --log=error
@@ -440,6 +498,7 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | The thing being demonstrated is a small device inside an empty window | Make that surface fill the window. |
 | A product shot's frames all look alike | Add the scale pattern: hold 1, then 1.6 or more, and 1.9 or more on the sentence. |
 | No cursor on the click | Add the 44×50 glyph as a child of the camera. Measure the tip onto the control after fonts load. Delete hand-written coordinates. |
+| The window shows a UI written for the film: its own JSX or inline styles imitating the product, tabs or panels the product does not have | Delete it. Shoot the product's build with `shootProduct` and show it in `ProductFrame`, or import its components with the shipped CSS. `npm run verify` compares the landed frame with the real page. |
 | The product surface is a PNG or a screenshot from `docs/` | The import failed and was abandoned. Fix the import and render the component. A bitmap cannot be clicked and goes soft when the camera zooms. |
 | The photograph is behind the hook, the logo, the principles, or the end card | Those shots are a plain field. Paper or ink. The photograph stays behind the product windows. |
 | Principles has shapes, repeated logos, or the photograph | Type on ink, one line at a time. Keep the duration. |
@@ -452,7 +511,16 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | Several presses within a second | Keep presses 30+ frames apart. Show one slowly; let repeats go by in one move. |
 | A part appears after a click on a palette, in a product that uses drag | Drag it: cursor down on the palette item, the item follows the cursor, drops, lands. |
 | The user asked for an order or a scene that is not in the film | Rebuild the shot list from the user's request. The default shape only fills gaps. |
-| The film's length equals the example's while the reference is a different length | Recut to the reference's length and shot count. |
+| The film is padded to match the reference's length, or a needed proof was cut to match it | Recut to the shots this product needs. The reference gives the shape, not the length. |
+| A logo part is narrower or taller than in the original file | The layer was given its own width and height. Draw every layer in one box with `LogoLayers`; animate with `transform`. |
+| A letter at the edge of a logo layer is cut (the last letter of the words, the end of a bar) | The layer was trimmed through the part. Recut on the full canvas with a margin; trim only empty pixels. |
+| Headline type fades out over the photograph | The type leaves before its field clears (the kit's `Headline` does this); `npm run verify` checks a still mid-exit. |
+| A check fails and the fix changes a colour or a timing only to get under its threshold | That is loosening the check from the other side. Fix what the check found; if the check is wrong, report it. |
+| The lockup is followed by the name in type, or the name appears three times in a row | The lockup is the name. Remove the typed copy. |
+| A zoomed frame slices a line of text along its top or bottom edge | Move the camera so the frame's edges fall in the gaps between rows, or include the line whole. A half line at the edge reads as a mistake. |
+| The demonstrated surface fills only the top half of the window | Make it fill the window (larger type in the surface, more rows, or a shorter window body); the empty half is what the viewer sees at scale 1. |
+| A shot is a flat field with nothing on it (`blank` in verify, `nothing on screen` in inspect) | The type is the same colour as its field, or the scene did not mount. A light `tone` on `Headline` gets an ink field. |
+| The backdrop has letters, a sign, a logo, or a screen in it | Generate it again from a prompt that names only a place and the light: no product name, no "launch", "video", "app", "AI". |
 | A blank or half-built frame was noted in review and the delivery was rendered anyway | Fix it first. A noted problem that ships is a failed review. |
 | Terminal or tool-card text is typed into a scene | Capture it from the real command and read the JSON. |
 | The person types the agent's commands, or the cursor presses during the agent's steps | After the prompt is sent, every step is a tool card with no cursor. |
@@ -483,4 +551,4 @@ Plain launch voice: what you made, what it does for the reader, the link. Not th
 
 ## Timing
 
-30fps, 120 BPM, one beat = 15 frames. Shot lengths are multiples of 15. The example's lengths were hook 120, name 105, product shots 300–330, principles 150 (one line per 30 frames), end card 150, for a 49.5-second film. Scale them to the reference's total; do not copy the total.
+30fps, 120 BPM, one beat = 15 frames. Shot lengths are multiples of 15. The example's lengths were hook 120, name 105, product shots 300–330, principles 150 (one line per 30 frames), end card 150, for a 49.5-second film. Use them as sizes for one shot of each kind; the total is the sum of the shots this product needs.

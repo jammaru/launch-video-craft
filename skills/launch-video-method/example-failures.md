@@ -48,8 +48,19 @@ Each failure below was measured on the delivered mp4 at full size. Each has its 
 | Static 9 seconds | `assertBeats`: a hold over 120 frames fails unless `playing: true` |
 | Type on the photograph, dark logo | `contrast.py` in verify: busy background behind type, or under 3:1. `Headline` draws its own paper field. |
 | Window peeking | The kit's `rise` starts 1000px below and is hidden until it moves |
-| Iframe clicks, late measurement | SKILL.md and reference.md: render in the film's DOM; if an iframe is unavoidable, measure before `continueRender` and put state in its URL |
+| Iframe clicks, late measurement | `useProduct` measures inside the page before `continueRender`; state comes from the URL or `prepare`, one mount per state |
 | Demo banner, empty half window | The verify sheet, read by eye, and the reject rows in reference.md. No machine check knows what the product's own chrome is. |
 | No review | `npm run render` runs `gate.mjs`: it refuses without a clean `review/report.json` newer than every source file, and without a written "Stills checked" line per shot |
 
 The machine checks would have stopped this film at the first `npm run verify`, on the missing anchors. The banner and the half-empty window needed someone to open the sheet. That is why the gate asks for written lines, not a checkbox.
+
+## A later film: the lookalike
+
+A later film of the same product passed every check above and still did not show the product. The agent read the playground's `render.ts` and `styles.css`, then wrote its own `PlaygroundSurface`: a dark code pane, three provider tabs, yellow and red diagnostic cards, all inline styles. The real playground has no provider tabs; it shows one card per provider in a grid, in its own fonts and colours. A second film kept the shipped CSS but rebuilt the markup, and drifted the same way.
+
+Nothing measured whether the window was the product. Against a screenshot of the real page at the window's size, the hand-drawn window scored 0.07 on edge match and the rebuilt one 0.14; the real page, shifted and rescaled a little, scores 0.8 to 0.98.
+
+| Failure | Check |
+| --- | --- |
+| A UI written for the film | Every `Window` needs `window.real` in its beat sheet. A web page the product builds is shot by `shootProduct` and shown with `ProductFrame`; `npm run verify` compares the landed window with the screenshot (`similar.py`, 0.5 or more) and fails a scene without `useProduct` and `<ProductFrame>`. |
+| A web UI passed off as captured output | A `capture` window must import its capture file and render it in `Terminal`, the agent chat, or with the shipped CSS from `src/vendor/`. |

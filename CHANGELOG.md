@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.8.0 - 2026-10-11
+
+Two films of a product with a web playground passed every check while showing a UI the agent wrote itself after reading the product's renderer: tabs and panels the product does not have.
+
+- The kit renders the product's real page: `shootProduct` (capture/lib.mjs) copies the product's own build to `public/product/` and screenshots it with Remotion's headless browser at the window's size; `useProduct` and `<ProductFrame>` load that build in the window, find anchors in the product's own markup, and measure before `continueRender`.
+- Every `Window` names its source in the beat sheet (`window.real`: the screenshot, or the captured JSON). `npm run verify` compares the landed window with the screenshot (`scripts/similar.py`, edge match 0.5 or more; the real page scored 0.88–0.98, the two lookalikes 0.16–0.19) and fails a scene that draws a web UI without `ProductFrame`.
+- SKILL.md: "Do not write the product's UI yourself"; the iframe rule is replaced by `ProductFrame`'s measured, URL- or `prepare`-driven states.
+
+## 0.7.4 - 2026-10-11
+
+- Verify renders every result and hold-end frame again without the debug overlay and fails when type is cut by an edge of the frame (`scripts/edges.py`). Measured on a film: every frame with a sliced line scored 0.9–46% of an edge; clean frames 0.
+- The kit's window title fades out while the camera is zoomed; centred or left, some zoom cut it.
+
+## 0.7.3 - 2026-10-11
+
+- `assertFraming` fails a hold under scale 1.4, so a result cannot be "read" in a wide shot by naming the whole page as `resultTarget`, and fails a cursor still in view while the result is read. Both were in a film that passed 0.7.2.
+
+## 0.7.2 - 2026-10-11
+
+- `Headline` lets its type leave before its field clears, so fading type never sits on the photograph; verify checks a still mid-exit for a plain field.
+- `inspect` finds flat frames by their spread of values instead of ffmpeg's blackdetect, which flagged an ink field with type on it as black and pushed a film to change its ink colour to pass.
+- New rejects: a logo layer trimmed through a letter, and changing a colour or timing only to get under a check's threshold.
+
+## 0.7.1 - 2026-10-11
+
+Found by inspecting a film made with 0.7.0 by another model, which passed every check:
+
+- `Headline` picks its field from its tone (ink behind light type), so white principles no longer vanish on a paper field. The kit had introduced that.
+- Blank frames fail: `contrast.py` rejects a still where almost nothing differs from the field, and `inspect` rejects any flat-colour stretch over 0.5s, not only black.
+- `LogoLayers` draws logo layers cut on one canvas in one box with `objectFit: contain`; a layer given its own width and height was squashed. A cut through a letter is the wrong cut. A lockup is not followed by the name in type.
+- New rejects: a zoom that slices a line of text at the frame edge, a surface that fills only the top half of the window.
+
+## 0.7.0 - 2026-10-10
+
+- The reference is a guide to the film's shape, not a template. Research writes what the reference is, its scenes as roles, and how this product fills each role (or drops it), and adds the roles this product needs. The product's nature decides the film.
+- Length comes from the product: the sum of the shots it needs (a product shot about 7–11 seconds), not the reference's length within ±30%.
+- Backdrop prompts name only a place and its light. No product name, "launch", "video", "app", or "AI", which image models paint into the picture. `npm run verify` reads the backdrop with tesseract (when installed) and fails on writing.
+- The finished film is inspected every time: `npm run render` runs `npm run inspect`, which takes five stills per shot from the mp4 into `review/film-sheet.png` and fails on black stretches, a frozen picture over 4 seconds, a length mismatch, and missing or silent audio. `npm run finish` passes only when the last inspect is newer than the mp4 and NOTES.md "Film checked" has a written line for the backdrop and each shot.
+
 ## 0.6.0 - 2026-10-10
 
 - Verification runs on every change, and the delivery render waits for it. `npm run verify` renders the headline, the landed window, and the press, result, and hold end of every action with each anchor outlined and the cursor tip marked, writes a sheet per shot, and fails on guessed coordinates, broken beat sheets, misses in space, and unreadable type. `npm run render` refuses until the last verify is clean, newer than every source file, and NOTES.md has a written "Stills checked" line per shot.

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode, Ref } from "react";
+import { createContext, useContext, type CSSProperties, type ReactNode, type Ref } from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 
 import { keyed, ramp, type Key } from "../lib/motion";
@@ -32,6 +32,9 @@ export function Backdrop() {
 
 export type CameraKey = Key<"x" | "y" | "scale">;
 
+/** The camera's scale at this frame, for children that should change when zoomed. */
+const CameraScale = createContext(1);
+
 export function Camera({ keys, children }: { keys: CameraKey[]; children: ReactNode }) {
   const frame = useCurrentFrame();
   const x = keyed(frame, keys, "x");
@@ -44,7 +47,7 @@ export function Camera({ keys, children }: { keys: CameraKey[]; children: ReactN
         transform: `translate(960px, 540px) scale(${scale}) translate(${-x}px, ${-y}px)`,
       }}
     >
-      {children}
+      <CameraScale.Provider value={scale}>{children}</CameraScale.Provider>
     </AbsoluteFill>
   );
 }
@@ -74,6 +77,7 @@ export function Window({
   bodyRef?: Ref<HTMLDivElement>;
   children: ReactNode;
 }) {
+  const zoom = useContext(CameraScale);
   return (
     <div
       style={{
@@ -107,6 +111,7 @@ export function Window({
         {["#ff5f57", "#febc2e", "#28c840"].map((dot) => (
           <div key={dot} style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: dot }} />
         ))}
+        {/* Gone while zoomed: wherever it sits, some zoom cuts it at the frame's edge. */}
         <div
           style={{
             position: "absolute",
@@ -114,6 +119,7 @@ export function Window({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            opacity: 1 - ramp(zoom, 1.1, 1.3),
             fontFamily: fonts.ui,
             fontSize: 14,
             fontWeight: 500,
@@ -196,13 +202,21 @@ export function Cursor({ keys, presses = [], from = 0 }: { keys: CursorKey[]; pr
  * The headline sits on its own plain field, never on the photograph: type over a photo
  * loses contrast wherever the picture is dark or busy. The field fades as the headline leaves.
  */
+/** Paper behind dark type, ink behind light type, so a headline never matches its field. */
+function fieldFor(tone: string) {
+  const hex = tone.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return color.paper;
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 140 ? color.ink : color.paper;
+}
+
 export function Headline({
   text,
   start,
   out,
   size = 116,
   tone = color.ink,
-  field = color.paper,
+  field = fieldFor(tone),
 }: {
   text: string;
   start: number;
@@ -212,15 +226,20 @@ export function Headline({
   field?: string;
 }) {
   const frame = useCurrentFrame();
-  const leave = out === undefined ? 0 : ramp(frame, out, out + 14);
+  // The type is gone (8 frames) before its field starts to clear (6 to 14), so a fading
+  // headline never sits on the photograph behind it.
+  const leave = out === undefined ? 0 : ramp(frame, out, out + 8);
+  const clear = out === undefined ? 0 : ramp(frame, out + 6, out + 14);
   const words = text.split(" ");
   const fitted = Math.min(size, 1700 / (text.length * 0.56));
   return (
-    <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - leave }}>
+    <AbsoluteFill>
+    <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - clear }} />
     <AbsoluteFill
       style={{
         alignItems: "center",
         justifyContent: "center",
+        opacity: 1 - leave,
         transform: `translateY(${-leave * 70}px)`,
       }}
     >

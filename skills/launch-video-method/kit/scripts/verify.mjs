@@ -2,10 +2,12 @@
 // and writes review/report.json. `npm run render` refuses to run until this passes.
 //
 // For every shot with a beat sheet it renders, with the framing overlay on:
-//   headline (mid-read), landed (window at rest), and per action: press, result, hold end.
+//   headline (mid-read and mid-exit), landed (window at rest), and per action: press, result, hold end.
 // Shots without a beat sheet (title, logo, end card) get 3 stills.
 // Then it checks: no guessed fallback coordinates in scenes, every still rendered
-// (assertBeats / assertFraming did not throw), and type on flat fields is readable.
+// (assertBeats / assertFraming did not throw), type on flat fields is readable, held frames
+// do not cut type, every window shows the product's real page or captured output, and the
+// backdrop has no writing.
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -67,6 +69,8 @@ function framesFor(id) {
   if (!b) return [["early", Math.round(d * 0.25)], ["middle", Math.round(d * 0.5)], ["late", d - 10]];
   const list = [];
   if (b.headline) list.push(["headline", Math.round((b.headline.in + b.headline.out) / 2) + 8]);
+  // Mid-exit: the type is still visible; whatever is behind it must be its field, not the photograph.
+  if (b.headline) list.push(["headline-exit", b.headline.out + 4]);
   if (b.window) list.push(["landed", b.window.landed + 2]);
   for (const a of b.actions) {
     if (a.press !== undefined) list.push([`${a.name}-press`, a.press]);
@@ -106,11 +110,107 @@ for (const id of Object.keys(durations)) {
 
 // 4. Type on flat fields: headline frames and shots without a beat sheet (title, logo, end card).
 const flat = stills.filter((s) => s.label === "headline" || !sheets[s.shot]);
-if (flat.length) {
-  const out = execFileSync("python3", [join(here, "scripts/contrast.py"), ...flat.map((s) => join(here, s.file))], { encoding: "utf8" });
+const exits = stills.filter((s) => s.label === "headline-exit");
+const contrast = (files, extra = []) => {
+  if (!files.length) return;
+  const out = execFileSync("python3", [join(here, "scripts/contrast.py"), ...extra, ...files.map((s) => join(here, s.file))], { encoding: "utf8" });
   for (const line of out.trim().split("\n").filter(Boolean)) {
     const result = JSON.parse(line);
     if (!result.ok) failures.push(`${relative(here, result.file)}: ${result.problems.join("; ")}`);
+  }
+};
+contrast(flat);
+contrast(exits, ["--busy-only"]);
+
+// 5. Held frames end between rows, not through a line of type. The hold-end stills are rendered
+// again without the debug overlay, whose outlines would read as cut strokes.
+for (const [id, b] of Object.entries(sheets)) {
+  const composition = await selectComposition({ serveUrl, id: `Shot-${id}` });
+  const files = [];
+  for (const a of b.actions) {
+    for (const [label, frame] of [["result", a.resultCamera + 2], ["hold-end", a.holdUntil - 2]]) {
+      const output = join(reviewDir, id, `clean-${String(frame).padStart(4, "0")}-${a.name}-${label}.png`);
+      try {
+        await renderStill({ composition, serveUrl, frame, output, imageFormat: "png" });
+        files.push(output);
+      } catch {
+        // The framing error was already reported by the debug render of this shot.
+      }
+    }
+  }
+  if (!files.length) continue;
+  const out = execFileSync("python3", [join(here, "scripts/edges.py"), ...files], { encoding: "utf8" });
+  for (const line of out.trim().split("\n").filter(Boolean)) {
+    const result = JSON.parse(line);
+    if (!result.ok) failures.push(`${relative(here, result.file)}: ${result.problems.join("; ")}`);
+  }
+}
+
+// 6. The window shows the product, not a lookalike. A web page must be the product's own build in
+// ProductFrame, and its landed frame must match the screenshot shootProduct took of that build.
+// A terminal or agent window must render the captured JSON it names.
+const pairs = [];
+const sceneText = (id) => ["tsx", "beats.ts"].map((ext) => join(scenesDir, `${id}.${ext}`)).filter(existsSync).map((f) => readFileSync(f, "utf8")).join("\n");
+const sheetsLoaded = Object.keys(sheets).length === beatFiles.length;
+for (const id of sheetsLoaded ? Object.keys(durations) : []) {
+  if (/<Window\b/.test(sceneText(id)) && !sheets[id]?.window) failures.push(`${id}: the scene draws a Window but its beat sheet has no window (with window.real), so nothing checks what it shows`);
+}
+for (const [id, b] of Object.entries(sheets)) {
+  const real = b.window?.real;
+  if (!real) continue;
+  const scene = sceneText(id);
+  if (real.capture) {
+    const name = real.capture.split("/").pop();
+    if (!existsSync(join(here, real.capture))) failures.push(`${id}: window.real.capture ${real.capture} does not exist; run npm run capture`);
+    else if (!new RegExp(`import .* from ["'][^"']*${name.replace(/\./g, "\\.")}["']`).test(scene)) failures.push(`${id}: the scene does not import ${real.capture}, so the window is not showing what was captured`);
+    else if (!/from ["']\.\.\/components\/(Terminal|Chat)["']|from ["'][^"']*vendor\//.test(scene)) {
+      failures.push(`${id}: window.real.capture is for a terminal, an agent, or a page drawn with the product's shipped CSS (src/vendor/); a web page the product builds is shot with shootProduct and shown with ProductFrame`);
+    }
+    continue;
+  }
+  const shot = join(here, real.screenshot);
+  const record = existsSync(join(here, "capture/real/real.json")) ? JSON.parse(readFileSync(join(here, "capture/real/real.json"), "utf8")) : { shots: {} };
+  if (!existsSync(shot) || !Object.values(record.shots).some((s) => s.screenshot === real.screenshot)) {
+    failures.push(`${id}: ${real.screenshot} was not taken by shootProduct (capture/lib.mjs); shoot the product's built page in npm run capture`);
+    continue;
+  }
+  if (!existsSync(join(here, "public/product"))) failures.push(`${id}: public/product/ is missing; shootProduct copies the product's build there`);
+  if (!/<ProductFrame\b/.test(scene) || !/useProduct\(/.test(scene)) {
+    failures.push(`${id}: the scene does not render the product's page with useProduct + <ProductFrame>; a redrawn copy of the UI is not the product`);
+    continue;
+  }
+  const composition = await selectComposition({ serveUrl, id: `Shot-${id}` });
+  const output = join(reviewDir, id, `clean-${String(b.window.landed + 2).padStart(4, "0")}-real.png`);
+  try {
+    await renderStill({ composition, serveUrl, frame: b.window.landed + 2, output, imageFormat: "png" });
+    pairs.push(real.screenshot, relative(here, output), "150,137,1620,889");
+  } catch {
+    // Reported by the debug render.
+  }
+}
+if (pairs.length) {
+  const out = execFileSync("python3", [join(here, "scripts/similar.py"), ...pairs], { cwd: here, encoding: "utf8" });
+  for (const line of out.trim().split("\n").filter(Boolean)) {
+    const result = JSON.parse(line);
+    if (!result.ok) failures.push(`${result.file}: ${result.problems.join("; ")}`);
+  }
+}
+
+// 7. The backdrop photograph has no writing in it. Image models paint the words of their prompt
+// (a product name, "launch") into skies and signs; tesseract finds them when it is installed.
+const backdrop = join(here, "public/backdrop.jpg");
+if (existsSync(backdrop)) {
+  try {
+    const tsv = execFileSync("tesseract", [backdrop, "-", "--psm", "11", "tsv"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    const words = tsv
+      .split("\n")
+      .slice(1)
+      .map((row) => row.split("\t"))
+      .filter((cols) => Number(cols[10]) >= 75 && /[A-Za-z]{3,}/.test(cols[11] ?? ""))
+      .map((cols) => cols[11]);
+    if (words.length) failures.push(`public/backdrop.jpg has writing in it (${words.slice(0, 6).join(", ")}): generate it again from a prompt that names only a place`);
+  } catch {
+    console.log("tesseract is not installed: look at public/backdrop.jpg at full size for letters, signs, and logos yourself.");
   }
 }
 

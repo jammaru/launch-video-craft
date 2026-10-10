@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-10T15:11:27.097Z",
+  "film": "../../../video/llm-abi.mp4",
+  "seconds": 35.669,
+  "failures": [
+    "the film is 35.67s; the shots add up to 15.00s",
+    "nothing on screen from 28.2s to 31.8s (end): a flat frame, often type the same colour as its field"
+  ],
+  "stills": [
+    {
+      "shot": "Command",
+      "label": "start",
+      "frame": 8,
+      "file": "review/film/000-Command-start.png"
+    },
+    {
+      "shot": "Command",
+      "label": "quarter",
+      "frame": 53,
+      "file": "review/film/001-Command-quarter.png"
+    },
+    {
+      "shot": "Command",
+      "label": "half",
+      "frame": 105,
+      "file": "review/film/002-Command-half.png"
+    },
+    {
+      "shot": "Command",
+      "label": "three-quarters",
+      "frame": 158,
+      "file": "review/film/003-Command-three-quarters.png"
+    },
+    {
+      "shot": "Command",
+      "label": "end",
+      "frame": 202,
+      "file": "review/film/004-Command-end.png"
+    },
+    {
+      "shot": "Agent",
+      "label": "start",
+      "frame": 218,
+      "file": "review/film/010-Agent-start.png"
+    },
+    {
+      "shot": "Agent",
+      "label": "quarter",
+      "frame": 270,
+      "file": "review/film/011-Agent-quarter.png"
+    },
+    {
+      "shot": "Agent",
+      "label": "half",
+      "frame": 330,
+      "file": "review/film/012-Agent-half.png"
+    },
+    {
+      "shot": "Agent",
+      "label": "three-quarters",
+      "frame": 390,
+      "file": "review/film/013-Agent-three-quarters.png"
+    },
+    {
+      "shot": "Agent",
+      "label": "end",
+      "frame": 442,
+      "file": "review/film/014-Agent-end.png"
+    }
+  ]
+}

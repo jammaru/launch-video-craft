@@ -31,7 +31,7 @@ export const timing = {
 export const beats = assertBeats("Command", {
   duration: durations.Command,
   headline: { in: timing.headlineIn, out: timing.headlineOut, words: copy.command.headline.split(" ").length },
-  window: { in: timing.windowIn, landed: timing.windowLanded },
+  window: { in: timing.windowIn, landed: timing.windowLanded, real: { capture: "src/captured/demo.json" } },
   actions: [
     { name: "focus", target: "prompt-ps1", camera: timing.focusCamera, cursor: timing.focusCursor, press: timing.focus, result: timing.typeStart, resultCamera: timing.typeStart, holdUntil: timing.enter, scale: 2, proves: true },
     { name: "enter", key: true, target: "prompt-ps1", resultTarget: "result", camera: timing.focusCamera, press: timing.enter, result: timing.firstLine, resultCamera: timing.outputCamera, holdUntil: durations.Command, scale: 2 },

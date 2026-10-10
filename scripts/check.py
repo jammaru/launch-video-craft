@@ -55,7 +55,7 @@ REQUIRED = {
         "assertBeats",
         ".git/info/exclude",
         "outranks this file",
-        "Length comes from the reference",
+        "Length comes from the product",
         "gesture the product uses",
         "proves: true",
         "kit/",
@@ -75,6 +75,15 @@ REQUIRED = {
         "example-failures.md",
         "continueRender",
         "3:1",
+        "npm run finish",
+        "LogoLayers",
+        "Film checked",
+        "names only a place",
+        "guide, not a template",
+        "ProductFrame",
+        "shootProduct",
+        "window.real",
+        "Do not write the product's UI yourself",
     ],
 }
 
@@ -99,8 +108,8 @@ def main() -> int:
             failures.append(f"{name}: name does not match directory")
         if "license: MIT" not in meta:
             failures.append(f"{name}: license is not MIT")
-        if 'version: "0.6.0"' not in meta:
-            failures.append(f"{name}: metadata.version is not 0.6.0")
+        if 'version: "0.8.0"' not in meta:
+            failures.append(f"{name}: metadata.version is not 0.8.0")
         hit = FORBIDDEN.search(body)
         if hit:
             failures.append(f"{name}: forbidden text {hit.group()!r}")
@@ -111,7 +120,7 @@ def main() -> int:
                     hit = FORBIDDEN.search(path.read_text(encoding="utf-8"))
                     if hit:
                         failures.append(f"{name}: forbidden text {hit.group()!r} in {path.relative_to(skill)}")
-            for required in ["package.json", "src/components/Stage.tsx", "src/components/Chat.tsx", "capture/lib.mjs", "scripts/sync-beats.mjs", "src/lib/framing.ts", "src/components/Debug.tsx", "scripts/verify.mjs", "scripts/gate.mjs", "scripts/contrast.py"]:
+            for required in ["package.json", "src/components/Stage.tsx", "src/components/Chat.tsx", "capture/lib.mjs", "scripts/sync-beats.mjs", "src/lib/framing.ts", "src/components/Debug.tsx", "scripts/verify.mjs", "scripts/gate.mjs", "scripts/contrast.py", "scripts/inspect.mjs", "scripts/finish.mjs", "scripts/blank.py", "scripts/edges.py", "src/components/Logo.tsx", "src/components/ProductFrame.tsx", "scripts/similar.py"]:
                 if not (kit / required).is_file():
                     failures.append(f"{name}: kit/{required} missing")
             if (kit / "src/lib/beats.ts").exists():
@@ -120,8 +129,8 @@ def main() -> int:
             if needle not in body:
                 failures.append(f"{name}: missing {needle!r}")
     plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
-    if '"version": "0.6.0"' not in plugin:
-        failures.append("plugin.json version is not 0.6.0")
+    if '"version": "0.8.0"' not in plugin:
+        failures.append("plugin.json version is not 0.8.0")
     if '"skills": "./skills/"' not in plugin:
         failures.append('plugin.json must set "skills": "./skills/"')
     logo = ROOT / "assets" / "logo.png"
