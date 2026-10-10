@@ -4,19 +4,13 @@
 
 <h1 align="center">Launch Video Craft</h1>
 
-<p align="center">
-  ローンチ動画を Remotion まで作る Agent Skill。
-</p>
+<p align="center"><em>ローンチ動画を Remotion で作る Agent Skill</em></p>
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-</p>
-
-## これは何？
+---
 
 自分でプロダクトを作ったら、ローンチのときに短いローンチ動画を作ることが多いと思います。一方で、SNS でよく見かけるおしゃれなローンチ動画を、ちゃんと作るのは難しい。
 
-エージェントに「いい感じに作って」とだけ頼んでも、期待どおりの映像にはなりにくいです。実際の UI を使わず、勝手にそれっぽい画面を描いてしまう——そういうズレをなくすための Agent Skill です。参考クリップのテンポに合わせ、**本物の製品画面**を Remotion で映す手順と判断の基準を [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md) にまとめています。
+エージェントに「いい感じに作って」とだけ頼んでも、期待どおりの映像にはなりにくいです。実際の UI を使わず、勝手にそれっぽい画面を描いてしまう——そういうズレをなくす手順と判断の基準を [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md) にまとめています。参考クリップのテンポに合わせ、**本物の製品画面**を Remotion で映すところまでです。
 
 ## このスキルで作った動画の例
 
