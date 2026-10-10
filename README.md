@@ -8,15 +8,15 @@
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg" /></a>
 </p>
 
-<p align="center">
-  <img src="assets/agent-demo.webp" alt="エージェントが launch-video-craft を使って動画のテンポを確かめ、ずれを直すところ" width="720">
-</p>
-
 ## これは何？
 
 自分でプロダクトを作ったら、ローンチのときに短いローンチ動画を作ることが多いと思います。一方で、SNS でよく見かけるおしゃれなローンチ動画を、ちゃんと作るのは難しい。
 
 エージェントに「いい感じに作って」とだけ頼んでも、期待どおりの映像にはなりにくいです。実際の UI を使わず、勝手にそれっぽい画面を描いてしまう——そういうズレをなくす手順と判断の基準を [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md) にまとめています。参考クリップのテンポに合わせ、**本物の製品画面**を Remotion で映すところまでです。
+
+<p align="center">
+  <img src="assets/agent-demo.webp" alt="エージェントが launch-video-craft を使って動画のテンポを確かめ、ずれを直すところ" width="720">
+</p>
 
 ## このスキルで作った動画の例
 
