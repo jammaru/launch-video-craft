@@ -60,17 +60,21 @@ export function Terminal({ rows, scroll = 0, contentRef }: { rows: Row[]; scroll
                   <span style={{ color: color.violet, fontWeight: 600 }}>{row.cwd}</span>
                   <span style={{ color: color.muted }}> $ </span>
                 </span>
-                <span>{text}</span>
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: TERM.font * 0.6,
-                    height: TERM.line - 6,
-                    verticalAlign: "middle",
-                    backgroundColor: color.ink,
-                    opacity: caretOn || (frame >= row.typeStart && frame < row.enter && text.length < row.command.length) ? 0.85 : 0,
-                  }}
-                />
+                {/* The untyped rest is laid out but invisible, so this anchor has the full command's width on every frame. */}
+                <span data-anchor={`${row.anchor ?? `row-${index}`}-text`}>
+                  {text}
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: TERM.font * 0.6,
+                      height: TERM.line - 6,
+                      verticalAlign: "middle",
+                      backgroundColor: color.ink,
+                      opacity: caretOn || (frame >= row.typeStart && frame < row.enter && text.length < row.command.length) ? 0.85 : 0,
+                    }}
+                  />
+                  <span style={{ visibility: "hidden" }}>{row.command.slice(text.length)}</span>
+                </span>
               </div>
             );
           }

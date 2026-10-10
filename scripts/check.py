@@ -66,6 +66,15 @@ REQUIRED = {
         "Each actor does only what it does",
         "ToolCard",
         "no screen",
+        "assertFraming",
+        "npm run verify",
+        "fit(",
+        "pointIn",
+        "Stills checked",
+        "resultTarget",
+        "example-failures.md",
+        "continueRender",
+        "3:1",
     ],
 }
 
@@ -90,8 +99,8 @@ def main() -> int:
             failures.append(f"{name}: name does not match directory")
         if "license: MIT" not in meta:
             failures.append(f"{name}: license is not MIT")
-        if 'version: "0.5.0"' not in meta:
-            failures.append(f"{name}: metadata.version is not 0.5.0")
+        if 'version: "0.6.0"' not in meta:
+            failures.append(f"{name}: metadata.version is not 0.6.0")
         hit = FORBIDDEN.search(body)
         if hit:
             failures.append(f"{name}: forbidden text {hit.group()!r}")
@@ -102,7 +111,7 @@ def main() -> int:
                     hit = FORBIDDEN.search(path.read_text(encoding="utf-8"))
                     if hit:
                         failures.append(f"{name}: forbidden text {hit.group()!r} in {path.relative_to(skill)}")
-            for required in ["package.json", "src/components/Stage.tsx", "src/components/Chat.tsx", "capture/lib.mjs", "scripts/sync-beats.mjs"]:
+            for required in ["package.json", "src/components/Stage.tsx", "src/components/Chat.tsx", "capture/lib.mjs", "scripts/sync-beats.mjs", "src/lib/framing.ts", "src/components/Debug.tsx", "scripts/verify.mjs", "scripts/gate.mjs", "scripts/contrast.py"]:
                 if not (kit / required).is_file():
                     failures.append(f"{name}: kit/{required} missing")
             if (kit / "src/lib/beats.ts").exists():
@@ -111,8 +120,8 @@ def main() -> int:
             if needle not in body:
                 failures.append(f"{name}: missing {needle!r}")
     plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
-    if '"version": "0.5.0"' not in plugin:
-        failures.append("plugin.json version is not 0.5.0")
+    if '"version": "0.6.0"' not in plugin:
+        failures.append("plugin.json version is not 0.6.0")
     if '"skills": "./skills/"' not in plugin:
         failures.append('plugin.json must set "skills": "./skills/"')
     logo = ROOT / "assets" / "logo.png"

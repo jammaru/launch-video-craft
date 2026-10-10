@@ -6,10 +6,11 @@ export type Box = { x: number; y: number; w: number; h: number; cx: number; cy: 
 /**
  * Reads every `[data-anchor]` inside `root`, in root's own layout pixels.
  * Ancestor transforms (camera, window entrance) are divided out, so the
- * numbers are the same on every frame.
+ * numbers are the same on every frame. `ready` turns true once the measurement
+ * has run; the frame is captured only after that, so checks can trust it.
  */
-export function useAnchors(root: RefObject<HTMLElement | null>): Record<string, Box> {
-  const [boxes, setBoxes] = useState<Record<string, Box>>({});
+export function useAnchors(root: RefObject<HTMLElement | null>): { boxes: Record<string, Box>; ready: boolean } {
+  const [state, setState] = useState<{ boxes: Record<string, Box>; ready: boolean }>({ boxes: {}, ready: false });
   useLayoutEffect(() => {
     const handle = delayRender("measure anchors");
     let done = false;
@@ -34,12 +35,13 @@ export function useAnchors(root: RefObject<HTMLElement | null>): Record<string, 
             const h = rect.height / scale;
             next[node.dataset.anchor!] = { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
           });
-          setBoxes(next);
+          setState({ boxes: next, ready: true });
         }
-        finish();
+        // One more frame so React has committed the measured layout before the capture.
+        requestAnimationFrame(finish);
       }),
     );
     return finish;
   }, [root]);
-  return boxes;
+  return state;
 }

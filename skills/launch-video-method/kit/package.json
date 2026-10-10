@@ -10,18 +10,22 @@
     "studio": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit",
     "still": "remotion still src/index.ts",
+    "verify": "node scripts/verify.mjs",
     "draft": "remotion render src/index.ts Launch /tmp/launch-draft.mp4 --scale=0.5 --log=error",
-    "render": "remotion render src/index.ts Launch ../launch.mp4"
+    "render": "node scripts/gate.mjs && remotion render src/index.ts Launch ../launch.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.531",
     "@remotion/google-fonts": "4.0.531",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "remotion": "4.0.531"
+    "remotion": "4.0.531",
+    "@remotion/bundler": "4.0.531",
+    "@remotion/renderer": "4.0.531"
   },
   "devDependencies": {
     "@types/react": "19.2.14",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "esbuild": "0.28.1"
   }
 }

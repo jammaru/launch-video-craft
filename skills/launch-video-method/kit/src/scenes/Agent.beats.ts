@@ -40,8 +40,7 @@ export const beats = assertBeats("Agent", {
   headline: { in: timing.headlineIn, out: timing.headlineOut, words: copy.agent.headline.split(" ").length },
   window: { in: timing.windowIn, landed: timing.windowLanded },
   actions: [
-    { name: "focus", camera: timing.composerCamera, cursor: timing.focusCursor, press: timing.focus, result: timing.typeStart, resultCamera: timing.typeStart, holdUntil: timing.send, scale: 1.9, proves: true },
-    { name: "send", camera: timing.composerCamera, cursor: timing.sendCursor, press: timing.send, result: timing.skill, resultCamera: timing.toolCamera, holdUntil: durations.Agent, scale: 1.9 },
-    { name: "tool output", camera: timing.toolCamera, result: timing.toolOutput, resultCamera: timing.toolCamera, holdUntil: durations.Agent, scale: 2 },
+    { name: "focus", target: "composer-text", camera: timing.composerCamera, cursor: timing.focusCursor, press: timing.focus, result: timing.typeStart, resultCamera: timing.typeStart, holdUntil: timing.send, scale: 1.9, proves: true },
+    { name: "send", target: "send", resultTarget: "reply", camera: timing.composerCamera, cursor: timing.sendCursor, press: timing.send, result: timing.skill, resultCamera: timing.toolCamera, holdUntil: durations.Agent, scale: 1.9 },
   ],
 });

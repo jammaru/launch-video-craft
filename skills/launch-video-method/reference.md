@@ -144,7 +144,7 @@ export const beats = assertBeats("PublishBlocked", {
   headline: { in: 2, out: 36, words: 6 },
   window: { in: 40, landed: 70 },
   actions: [
-    { name: "publish", camera: 112, cursor: 110, press: 118, result: 126, resultCamera: 168, holdUntil: 214, scale: 2.1, proves: true },
+    { name: "publish", target: "publish", resultTarget: "toast", camera: 112, cursor: 110, press: 118, result: 126, resultCamera: 168, holdUntil: 214, scale: 2.1, proves: true },
   ],
 });
 ```
@@ -161,6 +161,10 @@ export type Action = {
   holdUntil: number;    // camera leaves the result after this
   scale: number;        // camera scale at the press
   proves?: boolean;     // this is what the headline names; defaults to the first action
+  target?: string;      // data-anchor pressed (or read, for a read-only beat); assertFraming checks it in space
+  resultTarget?: string; // data-anchor of what the press changed; framed and uncovered during the hold
+  playing?: boolean;    // the held picture moves by itself (a video plays), so a long hold is allowed
+  key?: boolean;        // the press is a key (Enter), not a click: no cursor needs to be on the target
 };
 export type Beats = {
   duration: number;
@@ -188,7 +192,9 @@ export function assertBeats(id: string, b: Beats): Beats {
     if (a.press !== undefined) {
       if (a.scale < 1.4) fail(`${a.name}: press at scale ${a.scale}; zoom to 1.4 or more first`);
       if (a.press - a.camera < 2) fail(`${a.name}: camera arrives at ${a.camera}, after or on the press ${a.press}`);
-      if (a.cursor === undefined) fail(`${a.name}: a press needs a cursor keyframe`);
+      if (a.cursor === undefined) {
+        if (!a.key) fail(`${a.name}: a press needs a cursor keyframe`);
+      }
       else if (a.press - a.cursor < 4) fail(`${a.name}: cursor arrives at ${a.cursor}, too close to the press ${a.press}`);
       if (a.result - a.press > 12) fail(`${a.name}: result ${a.result - a.press} frames after the press`);
       if (a.press - lastPress < 30) fail(`${a.name}: press ${a.press - lastPress} frames after the previous one`);
@@ -197,6 +203,8 @@ export function assertBeats(id: string, b: Beats): Beats {
     if (a.resultCamera - a.result > 50) fail(`${a.name}: camera reaches the result ${a.resultCamera - a.result} frames late`);
     if (a.holdUntil - a.resultCamera < 25) fail(`${a.name}: result held ${a.holdUntil - a.resultCamera} frames`);
     if (a.holdUntil > b.duration) fail(`${a.name}: hold runs past the shot`);
+    if (!a.playing && a.holdUntil - a.resultCamera > 120) fail(`${a.name}: the same picture is held ${a.holdUntil - a.resultCamera} frames; nothing changes for over 4 seconds`);
+    if (!a.target) fail(`${a.name}: name the data-anchor it lands on (target), so assertFraming can check the camera and cursor`);
   }
   if (errors.length) throw new Error(`${id} beats:\n- ${errors.join("\n- ")}`);
   return b;
@@ -238,7 +246,7 @@ The viewer read a headline, watched an unrelated window drift in, saw small clic
 
 **Backdrop.** `objectFit: cover`, scale about 1.06 with a slow sine breath, and a translate of about 0.08px per frame. Movement you barely notice keeps a still from looking frozen.
 
-**Window.** On the 1920×1080 stage, `{ x: 150, y: 96, w: 1620, h: 930 }`. Radius about 18, a soft two-layer shadow, a 40px title bar with traffic lights. Enters from about 820px below with a spring, scale 0.9 → 1, origin at top center. If a rendered frame shows meadow or sky wider than about 200px beside the window, the window is too small. Make it this size before you animate. The UI being demonstrated fills the window; do not center a small device in a large empty pane.
+**Window.** On the 1920×1080 stage, `{ x: 150, y: 96, w: 1620, h: 930 }`. Radius about 18, a soft two-layer shadow, a 40px title bar with traffic lights. Enters from about 1000px below with a spring, scale 0.9 → 1, origin at top center, and is hidden until it starts to move. From 820px a 930px window still peeks above the bottom edge while the headline is read. If a rendered frame shows meadow or sky wider than about 200px beside the window, the window is too small. Make it this size before you animate. The UI being demonstrated fills the window; do not center a small device in a large empty pane.
 
 **Camera.** Frames point `(x, y)` at the center:
 
@@ -265,6 +273,31 @@ Scale 1 is the establishing view only. A region is 1.4–1.6. A line the viewer 
 
 ## Click targets
 
+Every position the camera or cursor uses comes from a measured `data-anchor`. The kit does the measuring and the arithmetic:
+
+```ts
+const { boxes, ready } = useAnchors(bodyRef);       // measured after fonts, inside delayRender
+const boxAt = (name: string, frame = 0) => stageBox(boxes[name], scrollAt(frame)); // scrollAt: the scene's own scroll
+const [focus, send] = beats.actions;
+const composer = boxAt("composer");
+const camera: CameraKey[] = [
+  { at: 0, x: 960, y: 540, scale: 1 },
+  { at: beats.window!.landed, x: 960, y: 540, scale: 1 },
+  { at: focus.camera, ...fit(composer, { fill: 0.75, max: 1.9 }) },
+  { at: send.resultCamera, ...fit(boxAt("reply", send.resultCamera)) },
+];
+const cursor: CursorKey[] = [
+  { at: focus.cursor!, ...pointIn(boxAt("composer-text"), { fx: 0, dx: 8 }) },
+  { at: send.cursor!, ...pointIn(boxAt("send")) },
+];
+assertFraming("Agent", { beats, camera, cursor, ready, boxAt });
+```
+
+- `fit(box)` centres the box, scales it to fill about 62% of the frame (clamped 1.4–2.4), and keeps a zoomed view inside the window so the backdrop does not fill half the frame. `fitLeft` frames a line of text by its left edge. `union` frames a command and its output together.
+- **No fallback position.** `boxes.send ?? { x: 1200, y: 800 }` is the bug that put a film's click 150px beside its button: the measurement failed silently and the guess shipped. `pointIn(box)` returns an off-stage point until the box exists, and `assertFraming` names the missing anchor. `npm run verify` rejects `?? { x: <number>` and `? … : { x: <number>` in a scene. If an anchor is missing, fix the anchor.
+- **Anchor the thing, not its container.** A full-width row centres the camera on empty space. Anchor the sentence, the button, the one card. A box larger than the view fails `assertFraming`.
+- **Anchors must keep their size.** `useAnchors` measures once. Text being typed is measured at its first frame, when it is empty. The kit's terminal lays out the untyped rest of the command invisibly, so `prompt-text` has the full width on every frame. Do the same for any text that grows: mount it whole, hide what has not appeared.
+
 Measure in layout space after `document.fonts.ready` and one animation frame, inside `delayRender`. Call `continueRender` in cleanup too, or a remount stalls the render.
 
 `getBoundingClientRect` includes ancestor transforms. Divide by `root.getBoundingClientRect().width / root.offsetWidth`.
@@ -281,6 +314,36 @@ y = winY + bar + rect.cy - scroll + dy
 ```
 
 A full-width banner's center is the middle of the page, not its sentence. Offset toward the text (`-width / 2` plus a margin).
+
+**An iframe is the last resort.** Render the product's components in the film's own DOM. If the only way to show the surface is to load the product's page in an `<iframe>`:
+
+- Measure inside the frame in the same `delayRender` that waits for its `load`, and call `continueRender` only after the boxes are stored. Storing them in state after `continueRender` means some frames render before the boxes exist, which is where fallback coordinates get used.
+- Each frame is rendered in a fresh page, possibly out of order. A click sent into the iframe on frame 120 does not exist on frame 121. Derive the product's state from the frame: put it in the URL (`?step=2`, `#gemini`) and set `src` from the beat sheet, or render each state as its own iframe and switch with `visibility`.
+- Remove the product's demo or capture-mode chrome (a banner saying "capture mode", a debug summary, a step list for screenshots). Add a query flag the page reads to hide it, or crop it out with the camera. A summary line that prints the answer before the shot shows it gives the shot away.
+
+## Framing check
+
+`assertBeats` checks the beat sheet in time. `assertFraming` (`kit/src/lib/framing.ts`) checks it in space, against the measured boxes, and throws while rendering so the still fails with the reason:
+
+| Check | Fails when |
+| --- | --- |
+| Measured | an action's `target` or `resultTarget` has no measured `data-anchor` |
+| On target | at the press, the cursor tip is more than 4px outside the target (skipped for `key: true`) |
+| In view | at the press, the target is not wholly inside the view, or the scale is under 1.4 |
+| Product, not backdrop | a zoomed view at the press or on the result is more than 10% backdrop outside the window |
+| Readable | the result is larger than the view, cut by the frame (8px margin), or fills under 35% of the view's width and height |
+| Still | the result moves more than 6px while the camera holds it (a scroll that did not stop) |
+| Uncovered | the cursor sits on the result after the press |
+
+Errors name the coordinates (`the cursor presses at (408, 297), 113px off "prompt-ps1" (186, 165, 190×24)`), so the fix is arithmetic, not guessing. Do not loosen a check to pass it; fix the anchor, the camera, or the timing.
+
+`npm run verify` renders, for every shot, the headline mid-read, the landed window, and for each action the press, the result, and the hold end, with `debug: true`. In debug, `FramingOverlay` outlines each named anchor in red with its name and marks the cursor tip with a blue cross. It writes `review/<Shot>/<frame>-<label>.png`, a sheet per shot, and `review/report.json`. It also fails on:
+
+- a fallback coordinate in a scene,
+- a beat sheet that `assertBeats` or `assertFraming` rejects,
+- type that is hard to read: `scripts/contrast.py` splits headline stills (and stills of shots without beats: name, principles, end card) into a 12×8 grid and fails a cell where the background is busy (under 55% of its pixels near the median colour: type over a photograph) and a mark covering at least 2% of the cell has under 3:1 contrast. Headlines over the backdrop photograph and a dark logo on an ink end card are what this catches.
+
+`npm run render` runs `scripts/gate.mjs` first. It refuses when `review/report.json` is missing, lists failures, or is older than any file in `src/`, `public/`, or `capture/`, and when `NOTES.md` under "Stills checked" lacks a written line for a shot (the template's parenthesised placeholder does not count). Write what the stills show, not that you looked: "crosshair on the $ of prompt-ps1 at 104; command and v26.4.0 whole at 166 and 208, cursor out of view".
 
 ## Chat and logs
 
@@ -356,6 +419,8 @@ Regenerate the bed when any duration changes.
 
 ## Review and repair
 
+`npm run verify` first, after every change to a scene, a beat sheet, or a capture. Open each `review/<Shot>-sheet.png`. The machine checks catch a miss by coordinates; the sheet is where you see a frame that is legal and still wrong (the camera on an empty half of the window, a banner from the product's demo mode, a card whose header is cut). Then the draft film:
+
 ```bash
 npx remotion render src/index.ts <Film> /tmp/draft.mp4 --scale=0.5 --log=error
 ffmpeg -i /tmp/draft.mp4 -vf "fps=1,scale=480:-1,tile=4x4" sheet_%02d.png
@@ -397,6 +462,18 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | An empty card or box is visible before its first line | Hide the container with its first line. |
 | Two cursors during a played film | Move your cursor out of the view while the film inside plays. |
 | Zoomed type is cut off | Frame the sentence, not the middle of a full-width banner. Shrink Japanese lines if that locale was requested. |
+| A scene has `?? { x: ... }` or other guessed coordinates | Delete the fallback; fix the `data-anchor` so it is measured. `npm run verify` fails on it. |
+| The cursor presses beside the button, or the camera zooms onto empty space | Read the `assertFraming` message; take positions from `boxAt` and the camera from `fit()`. In an iframe, measure before `continueRender`. |
+| A click inside an iframe has no effect on the next frames | Each frame is a fresh page. Put the state in the iframe's URL, keyed from the beat sheet. |
+| Headline or end-card type sits on the photograph, or a logo is dark on ink | Headlines, name, principles, and end card are on a plain field. Text and marks contrast at least 3:1 with what is behind them (`contrast.py`). |
+| The window's top edge shows under the headline | Start it about 1000px below and hidden until it moves (the kit's `rise`). |
+| Terminal text is still scrolling while the camera holds it | Stop the scroll before the camera lands; `assertFraming` reports the movement. |
+| Long terminal lines run past the right edge of a zoomed view | Frame lines whole with `fitLeft`, or wrap or shorten the capture (`… N more`). |
+| The product's own demo banner or step summary appears | Hide it with a flag the page reads, or frame around it. It is not part of the product a user sees. |
+| Half of a zoomed frame is backdrop below or beside the window | Use `fit()`, which keeps the view inside the window. |
+| The same picture for more than 4 seconds | Show the next thing, or mark the hold `playing: true` only if something in it moves by itself. |
+| The product's name appears three times in a row (title, logo, end card) | Name once in the name shot and once on the end card. |
+| `NOTES.md` says "Stills checked: (pending)" and a delivery exists | The review was skipped. Run verify, read every sheet, write the lines, then render. `npm run render` refuses otherwise. |
 
 A bed around −20 dB mean, peak under 0 dB. The sheet cannot tell you a sound is late. Say so if you did not listen.
 

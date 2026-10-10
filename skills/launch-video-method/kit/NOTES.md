@@ -50,6 +50,18 @@ Length target: the reference's length ±30%.
 
 - (each on-screen string: the capture file it comes from, or `src/copy.ts`)
 
+## What each shot shows
+
+| Shot | The one thing the viewer must see | Its data-anchor | Gesture that causes it |
+| --- | --- | --- | --- |
+| | (the smallest element that proves the headline: a card, a line, a badge, never a whole page) | | |
+
+## Stills checked
+
+Written after opening `review/<Shot>-sheet.png` from `npm run verify`. One line per shot; `npm run render` refuses without them.
+
+- Command: (what the press still, result still, and hold-end still show; whether the cursor tip is inside the red box; whether the result is whole and readable)
+
 ## Problems found in review
 
 1. (each problem seen on a still, sheet, or strip, and its fix, before the next render)

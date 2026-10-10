@@ -49,11 +49,15 @@ export function Camera({ keys, children }: { keys: CameraKey[]; children: ReactN
   );
 }
 
-/** Translate and scale for a window rising from below; `progress` is the window spring. */
+/**
+ * Translate and scale for a window rising from below; `progress` is the window spring.
+ * At 0 the window is fully below the frame (96 + 1000 > 1080), so it never peeks under a headline.
+ */
 export function rise(progress: number): CSSProperties {
   return {
-    transform: `translateY(${(1 - progress) * 820}px) scale(${0.9 + 0.1 * progress})`,
+    transform: `translateY(${(1 - progress) * 1000}px) scale(${0.9 + 0.1 * progress})`,
     transformOrigin: "50% 0%",
+    visibility: progress > 0.001 ? "visible" : "hidden",
   };
 }
 
@@ -187,30 +191,36 @@ export function Cursor({ keys, presses = [], from = 0 }: { keys: CursorKey[]; pr
   );
 }
 
-/** Words rise one by one, 3 frames apart; exits upward over 14 frames from `out`. */
+/**
+ * Words rise one by one, 3 frames apart; exits upward over 14 frames from `out`.
+ * The headline sits on its own plain field, never on the photograph: type over a photo
+ * loses contrast wherever the picture is dark or busy. The field fades as the headline leaves.
+ */
 export function Headline({
   text,
   start,
   out,
   size = 116,
   tone = color.ink,
+  field = color.paper,
 }: {
   text: string;
   start: number;
   out?: number;
   size?: number;
   tone?: string;
+  field?: string;
 }) {
   const frame = useCurrentFrame();
   const leave = out === undefined ? 0 : ramp(frame, out, out + 14);
   const words = text.split(" ");
   const fitted = Math.min(size, 1700 / (text.length * 0.56));
   return (
+    <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - leave }}>
     <AbsoluteFill
       style={{
         alignItems: "center",
         justifyContent: "center",
-        opacity: 1 - leave,
         transform: `translateY(${-leave * 70}px)`,
       }}
     >
@@ -237,6 +247,7 @@ export function Headline({
           );
         })}
       </div>
+    </AbsoluteFill>
     </AbsoluteFill>
   );
 }
