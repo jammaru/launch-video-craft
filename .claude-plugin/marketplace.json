@@ -9,7 +9,7 @@
     {
       "name": "launch-video-craft",
       "description": "参考クリップのテンポに合わせ、実画面を使った Remotion ローンチ動画を作るスキル",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "author": {
         "name": "jammaru"
       },

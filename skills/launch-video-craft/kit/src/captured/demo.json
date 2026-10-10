@@ -1,0 +1,7 @@
+{
+  "cwd": "my-product",
+  "command": "node --version",
+  "lines": [
+    "v22.0.0"
+  ]
+}
