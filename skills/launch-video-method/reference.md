@@ -467,6 +467,9 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | The user asked for an order or a scene that is not in the film | Rebuild the shot list from the user's request. The default shape only fills gaps. |
 | The film is padded to match the reference's length, or a needed proof was cut to match it | Recut to the shots this product needs. The reference gives the shape, not the length. |
 | A logo part is narrower or taller than in the original file | The layer was given its own width and height. Draw every layer in one box with `LogoLayers`; animate with `transform`. |
+| A letter at the edge of a logo layer is cut (the last letter of the words, the end of a bar) | The layer was trimmed through the part. Recut on the full canvas with a margin; trim only empty pixels. |
+| Headline type fades out over the photograph | The type leaves before its field clears (the kit's `Headline` does this); `npm run verify` checks a still mid-exit. |
+| A check fails and the fix changes a colour or a timing only to get under its threshold | That is loosening the check from the other side. Fix what the check found; if the check is wrong, report it. |
 | The lockup is followed by the name in type, or the name appears three times in a row | The lockup is the name. Remove the typed copy. |
 | A zoomed frame slices a line of text along its top or bottom edge | Move the camera so the frame's edges fall in the gaps between rows, or include the line whole. A half line at the edge reads as a mistake. |
 | The demonstrated surface fills only the top half of the window | Make it fill the window (larger type in the surface, more rows, or a shorter window body); the empty half is what the viewer sees at scale 1. |

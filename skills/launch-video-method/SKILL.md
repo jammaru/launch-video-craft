@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.7.1"
+  version: "0.7.2"
 ---
 
 # Launch videos in Remotion

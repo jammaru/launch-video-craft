@@ -57,14 +57,11 @@ shots.forEach((shot, index) => {
 });
 execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-pattern_type", "glob", "-i", join(outDir, "*.png"), "-vf", `scale=480:-1,tile=5x${shots.length}`, "-frames:v", "1", join(here, "review/film-sheet.png")]);
 
-// 2. Black, frozen, silent. ffmpeg's detectors print to stderr.
+// 2. Flat (black, white, or any one colour), frozen, silent. blank.py finds flat frames by their
+// spread of values, so an ink field with type on it is not mistaken for black.
 const detect = (filter, extra = []) => spawnSync("ffmpeg", ["-hide_banner", "-i", film, ...extra, "-vf", filter, "-an", "-f", "null", "-"], { encoding: "utf8" }).stderr;
 const shotAt = (t) => shots.find((s) => t * fps >= s.start && t * fps < s.start + s.length)?.id ?? "end";
 
-for (const m of detect("blackdetect=d=0.5:pix_th=0.10").matchAll(/black_start:([\d.]+) black_end:([\d.]+)/g)) {
-  const [from, to] = [Number(m[1]), Number(m[2])];
-  if (from < seconds - 1.2) failures.push(`black from ${from.toFixed(2)}s to ${to.toFixed(2)}s (${shotAt(from)})`);
-}
 for (const run of JSON.parse(execFileSync("python3", [join(here, "scripts/blank.py"), film], { encoding: "utf8" }))) {
   failures.push(`nothing on screen from ${run.from}s to ${run.to}s (${shotAt(run.from)}): a flat frame, often type the same colour as its field`);
 }

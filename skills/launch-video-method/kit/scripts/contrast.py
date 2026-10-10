@@ -1,4 +1,6 @@
-"""Checks that type on a flat field can be read. Usage: contrast.py still.png [still.png ...]
+"""Checks that type on a flat field can be read. Usage: contrast.py [--busy-only] still.png [...]
+
+--busy-only checks only that the field is plain, for stills of type fading out on purpose.
 
 Prints one JSON object per still: {"file", "ok", "problems": [...]}.
 
@@ -43,12 +45,12 @@ def ratio(a, b):
     return (np.maximum(a, b) + 0.05) / (np.minimum(a, b) + 0.05)
 
 
-def check(path: str) -> dict:
+def check(path: str, busy_only: bool = False) -> dict:
     lum = luminance(load(path))
     h, w = lum.shape
     problems = []
     drawn = float((ratio(lum, float(np.median(lum))) >= 1.06).mean())
-    if drawn < 0.002:
+    if drawn < 0.002 and not busy_only:
         return {"file": path, "ok": False, "problems": [f"blank: only {drawn * 100:.2f}% of the frame differs from its field; the type may be the same colour as its field"]}
     busy, faint = [], []
     for row in range(ROWS):
@@ -61,7 +63,7 @@ def check(path: str) -> dict:
             if near < 0.55:
                 busy.append((col, row, round(near, 2)))
                 continue
-            if marks.size >= cell.size * 0.02:
+            if not busy_only and marks.size >= cell.size * 0.02:
                 strongest = float(np.percentile(marks, 90))
                 if strongest < 3:
                     faint.append((col, row, round(strongest, 2)))
@@ -74,5 +76,7 @@ def check(path: str) -> dict:
 
 
 if __name__ == "__main__":
-    for file in sys.argv[1:]:
-        print(json.dumps(check(file)))
+    args = sys.argv[1:]
+    busy_only = "--busy-only" in args
+    for file in (a for a in args if a != "--busy-only"):
+        print(json.dumps(check(file, busy_only)))

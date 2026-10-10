@@ -220,15 +220,20 @@ export function Headline({
   field?: string;
 }) {
   const frame = useCurrentFrame();
-  const leave = out === undefined ? 0 : ramp(frame, out, out + 14);
+  // The type is gone (8 frames) before its field starts to clear (6 to 14), so a fading
+  // headline never sits on the photograph behind it.
+  const leave = out === undefined ? 0 : ramp(frame, out, out + 8);
+  const clear = out === undefined ? 0 : ramp(frame, out + 6, out + 14);
   const words = text.split(" ");
   const fitted = Math.min(size, 1700 / (text.length * 0.56));
   return (
-    <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - leave }}>
+    <AbsoluteFill>
+    <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - clear }} />
     <AbsoluteFill
       style={{
         alignItems: "center",
         justifyContent: "center",
+        opacity: 1 - leave,
         transform: `translateY(${-leave * 70}px)`,
       }}
     >

@@ -2,7 +2,7 @@
 // and writes review/report.json. `npm run render` refuses to run until this passes.
 //
 // For every shot with a beat sheet it renders, with the framing overlay on:
-//   headline (mid-read), landed (window at rest), and per action: press, result, hold end.
+//   headline (mid-read and mid-exit), landed (window at rest), and per action: press, result, hold end.
 // Shots without a beat sheet (title, logo, end card) get 3 stills.
 // Then it checks: no guessed fallback coordinates in scenes, every still rendered
 // (assertBeats / assertFraming did not throw), and type on flat fields is readable.
@@ -67,6 +67,8 @@ function framesFor(id) {
   if (!b) return [["early", Math.round(d * 0.25)], ["middle", Math.round(d * 0.5)], ["late", d - 10]];
   const list = [];
   if (b.headline) list.push(["headline", Math.round((b.headline.in + b.headline.out) / 2) + 8]);
+  // Mid-exit: the type is still visible; whatever is behind it must be its field, not the photograph.
+  if (b.headline) list.push(["headline-exit", b.headline.out + 4]);
   if (b.window) list.push(["landed", b.window.landed + 2]);
   for (const a of b.actions) {
     if (a.press !== undefined) list.push([`${a.name}-press`, a.press]);
@@ -106,13 +108,17 @@ for (const id of Object.keys(durations)) {
 
 // 4. Type on flat fields: headline frames and shots without a beat sheet (title, logo, end card).
 const flat = stills.filter((s) => s.label === "headline" || !sheets[s.shot]);
-if (flat.length) {
-  const out = execFileSync("python3", [join(here, "scripts/contrast.py"), ...flat.map((s) => join(here, s.file))], { encoding: "utf8" });
+const exits = stills.filter((s) => s.label === "headline-exit");
+const contrast = (files, extra = []) => {
+  if (!files.length) return;
+  const out = execFileSync("python3", [join(here, "scripts/contrast.py"), ...extra, ...files.map((s) => join(here, s.file))], { encoding: "utf8" });
   for (const line of out.trim().split("\n").filter(Boolean)) {
     const result = JSON.parse(line);
     if (!result.ok) failures.push(`${relative(here, result.file)}: ${result.problems.join("; ")}`);
   }
-}
+};
+contrast(flat);
+contrast(exits, ["--busy-only"]);
 
 // 5. The backdrop photograph has no writing in it. Image models paint the words of their prompt
 // (a product name, "launch") into skies and signs; tesseract finds them when it is installed.

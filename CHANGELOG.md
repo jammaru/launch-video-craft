@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.2 - 2026-10-11
+
+- `Headline` lets its type leave before its field clears, so fading type never sits on the photograph; verify checks a still mid-exit for a plain field.
+- `inspect` finds flat frames by their spread of values instead of ffmpeg's blackdetect, which flagged an ink field with type on it as black and pushed a film to change its ink colour to pass.
+- New rejects: a logo layer trimmed through a letter, and changing a colour or timing only to get under a check's threshold.
+
 ## 0.7.1 - 2026-10-11
 
 Found by inspecting a film made with 0.7.0 by another model, which passed every check:
