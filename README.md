@@ -5,6 +5,10 @@
 <h1 align="center">Launch Video Craft</h1>
 
 <p align="center">
+  ローンチ動画を Remotion まで作る Agent Skill。
+</p>
+
+<p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
 </p>
 
