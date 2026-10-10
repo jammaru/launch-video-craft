@@ -16,8 +16,6 @@
 
 「ローンチ動画をいい感じに作って」とだけ頼むと、実際の UI を使わないことが多く、出来上がりもイメージとずれがちです。このリポジトリは、ローンチ動画を作る手順と判断の基準を Agent Skill にまとめたものです。
 
-[`launch-video-method`](skills/launch-video-method/SKILL.md) が本体です。技法は [`reference.md`](skills/launch-video-method/reference.md) にあります。[`example.md`](skills/launch-video-method/example.md) は、その手順で作った **1 本**（EmDash Preflight）の制作記録です。[`example-cli.md`](skills/launch-video-method/example-cli.md) は、UI のない製品（このスキル自身）の制作記録です。記録に出てくる問い、台詞、キャプチャの呼び出しはその製品向けなので、別の製品ではその製品用に書き直します。[`example-failures.md`](skills/launch-video-method/example-failures.md) は、失敗した 1 本をフレーム単位で測った記録です（読めない見出し、ボタンから外れたクリック、空白を映すカメラ、行われなかった確認）。[`kit/`](skills/launch-video-method/kit) は動画プロジェクトの雛形で、エージェントはここから作り始めます。kit の `npm run verify` は、クリック位置・ズーム位置・文字のコントラストを毎回検査し、確認用の静止画を書き出します。`npm run render` は、最新の verify が通り、静止画を確認した記録が NOTES.md にあるまで納品レンダーを拒否します。
-
 ### このスキルで作った動画の例
 
 | EmDash Preflight | ChatGPT |
