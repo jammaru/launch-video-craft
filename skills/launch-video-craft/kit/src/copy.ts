@@ -5,13 +5,11 @@ export const copy = {
   agent: {
     headline: "Ask the agent once.",
     title: "Agent",
-    placeholder: "Ask the agent",
+    placeholder: "Ask the agent…",
+    chip: "Skill · my-skill",
     prompt: "Check which Node this project runs on.",
-    skillLabel: "Using skill",
-    skillName: "my-skill",
-    skillFile: ".agents/skills/my-skill/SKILL.md",
+    using: "Using my-skill. Checking the runtime first.",
     ran: "Ran",
-    working: "Working",
     answer: "This project runs on the Node version above.",
   },
 };

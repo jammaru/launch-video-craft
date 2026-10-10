@@ -1,247 +1,211 @@
+import { ArrowUp, BookOpen, CheckCircle, NotePencil, Sparkle, TerminalWindow, Wrench } from "@phosphor-icons/react";
 import type { ReactNode, Ref } from "react";
 import { useCurrentFrame } from "remotion";
 
-import { ramp } from "../lib/motion";
+import type { Box } from "../lib/measure";
+import { keyed, ramp } from "../lib/motion";
 import { color, fonts } from "../theme";
+import { BAR, WIN } from "./Stage";
 
-/** A quiet agent chat for products with no chat of their own; the captured words inside are the point. */
-export const CHAT = { column: { x: 310, w: 1000 }, composer: { y: 752, h: 118 } };
+/**
+ * A quiet agent chat for products with no chat of their own; the captured words inside are the point.
+ * The log column is narrow enough that a card stays whole at scale 1.8 (a 1066px view).
+ */
+export const CHAT = { log: { x: 310, w: 1000, top: 28 }, composerH: 150 };
+export const CHAT_VIEWPORT = WIN.h - BAR - CHAT.composerH - CHAT.log.top;
 
-export function ChatSurface({ title, children, bodyRef }: { title: string; children: ReactNode; bodyRef?: Ref<HTMLDivElement> }) {
+/** The white surface inside the window. Put the composer's anchors under `bodyRef`. */
+export function ChatSurface({ children, bodyRef }: { children: ReactNode; bodyRef?: Ref<HTMLDivElement> }) {
   return (
-    <div ref={bodyRef} style={{ position: "absolute", inset: 0, backgroundColor: "#fff", fontFamily: fonts.ui, color: color.ink }}>
-      <div
-        style={{
-          height: 54,
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          paddingLeft: 28,
-          borderBottom: `1px solid ${color.line}`,
-          fontSize: 17,
-          fontWeight: 600,
-        }}
-      >
-        <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color.violet }} />
-        {title}
-      </div>
+    <div ref={bodyRef} style={{ position: "absolute", inset: 0, backgroundColor: "#fff", fontFamily: fonts.chat, color: color.ink }}>
       {children}
     </div>
   );
 }
 
-export function Composer({
-  text,
-  placeholder,
-  caret,
-  pressed,
-}: {
-  text: string;
-  placeholder: string;
-  caret: boolean;
-  pressed: boolean;
-}) {
+/**
+ * The scrolling log. Anchors inside it are measured on `logRef`, unscrolled, so they hold on every
+ * frame; place them on stage with `logStageBox`. Items stack 22px apart.
+ */
+export function ChatLog({ scroll, logRef, children, opacity = 1 }: { scroll: number; logRef: Ref<HTMLDivElement>; children: ReactNode; opacity?: number }) {
+  return (
+    <div style={{ position: "absolute", left: CHAT.log.x, width: CHAT.log.w, top: CHAT.log.top, height: CHAT_VIEWPORT, overflow: "hidden", opacity }}>
+      <div
+        ref={logRef}
+        style={{ position: "absolute", left: 0, right: 0, top: 0, display: "flex", flexDirection: "column", gap: 22, fontSize: 22, lineHeight: 1.5, transform: `translateY(${-scroll}px)` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** One item of the log: mounted from the start, fades in and rises 26px over 14 frames from `at`. */
+export function Reveal({ at, anchor, children }: { at: number; anchor: string; children: ReactNode }) {
+  const frame = useCurrentFrame();
+  const progress = ramp(frame, at, at + 14);
+  return (
+    <div data-anchor={anchor}>
+      <div style={{ opacity: progress, transform: `translateY(${(1 - progress) * 26}px)` }}>{children}</div>
+    </div>
+  );
+}
+
+export function UserBubble({ text }: { text: string }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "flex-end", paddingLeft: 200 }}>
+      <div style={{ padding: "14px 22px", borderRadius: 24, backgroundColor: "#f0f0ef" }}>{text}</div>
+    </div>
+  );
+}
+
+export function AgentText({ children }: { children: ReactNode }) {
+  return <div style={{ color: "#333" }}>{children}</div>;
+}
+
+export type ToolLine = { text: ReactNode; tone?: "plain" | "error" | "strong"; anchor?: string };
+
+const icons = { run: TerminalWindow, write: NotePencil, read: BookOpen, tool: Wrench };
+
+/**
+ * A step the agent took: gray header with an icon, the verb, and the command, file, or tool name in
+ * mono; the captured output below, each line fading in 2 frames after the one above from `start`.
+ * Without lines it is the header alone (a file written, a file read).
+ */
+export function ToolCard({ kind = "run", verb, name, lines = [], start = 0 }: { kind?: keyof typeof icons; verb: string; name: ReactNode; lines?: ToolLine[]; start?: number }) {
+  const frame = useCurrentFrame();
+  const Icon = icons[kind];
+  return (
+    <div style={{ border: "1px solid #e4e4e4", borderRadius: 18, overflow: "hidden", backgroundColor: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "14px 20px",
+          borderBottom: lines.length ? "1px solid #efefef" : "none",
+          backgroundColor: "#fafafa",
+          fontSize: 17,
+          color: "#666",
+        }}
+      >
+        <Icon size={18} />
+        <span>{verb}</span>
+        <span style={{ fontFamily: fonts.mono, color: color.ink, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</span>
+      </div>
+      {lines.length > 0 && (
+        <div style={{ padding: "16px 22px", fontFamily: fonts.mono, fontSize: 18, lineHeight: 1.65, color: "#333" }}>
+          {lines.map((line, index) => (
+            <div
+              key={index}
+              data-anchor={line.anchor}
+              style={{
+                whiteSpace: "pre-wrap",
+                color: line.tone === "error" ? color.rose : undefined,
+                fontWeight: line.tone === "strong" ? 700 : 400,
+                opacity: ramp(frame, start + index * 2, start + index * 2 + 8),
+              }}
+            >
+              {line.text || " "}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The closing line when the agent's work passed: green, with the captured detail on the right. */
+export function Done({ label, detail }: { label: string; detail: ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 22px", borderRadius: 18, backgroundColor: "#eafaf0", color: "#0d6b36", fontWeight: 600 }}>
+      <CheckCircle size={28} weight="fill" />
+      {label}
+      <span style={{ marginLeft: "auto", fontFamily: fonts.mono, fontSize: 16, fontWeight: 400, padding: "4px 12px", borderRadius: 8, backgroundColor: "#12a15022" }}>{detail}</span>
+    </div>
+  );
+}
+
+/** The composer: one line that keeps its end in view while typing, a chip naming the skill or tool, and Send. */
+export function Composer({ text, placeholder, chip, caret, pressed }: { text: string; placeholder: string; chip?: string; caret: boolean; pressed: boolean }) {
   return (
     <div
       data-anchor="composer"
       style={{
         position: "absolute",
-        left: CHAT.column.x,
-        width: CHAT.column.w,
-        top: CHAT.composer.y,
-        height: CHAT.composer.h,
-        borderRadius: 22,
-        border: "1px solid #e2dce7",
-        boxShadow: "0 6px 24px rgba(40, 20, 50, 0.07)",
+        left: CHAT.log.x - 20,
+        width: CHAT.log.w + 40,
+        bottom: 28,
+        height: CHAT.composerH - 44,
+        borderRadius: 26,
+        border: "1px solid #e2e2e2",
+        boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
         backgroundColor: "#fff",
+        padding: "18px 24px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
-      <div data-anchor="composer-text" style={{ position: "absolute", left: 26, top: 16, right: 26, fontSize: 23, lineHeight: "32px" }}>
-        {text ? <span>{text}</span> : <span style={{ color: "#a69dac" }}>{placeholder}</span>}
-        <span
+      <div data-anchor="composer-text" style={{ display: "flex", justifyContent: "flex-end", fontSize: 22, whiteSpace: "nowrap", overflow: "hidden", color: text ? color.ink : "#9a9a9a" }}>
+        <span style={{ flexShrink: 0, minWidth: "100%" }}>
+          {text || placeholder}
+          <span style={{ opacity: caret ? 1 : 0 }}>|</span>
+        </span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16, color: "#777" }}>
+        {chip && (
+          <span style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, backgroundColor: "#f3f3f2" }}>
+            <Sparkle size={16} /> {chip}
+          </span>
+        )}
+        <div
+          data-anchor="send"
           style={{
-            display: "inline-block",
-            width: 2,
-            height: 26,
-            marginLeft: 1,
-            verticalAlign: "middle",
+            marginLeft: "auto",
+            width: 44,
+            height: 44,
+            borderRadius: 22,
             backgroundColor: color.ink,
-            opacity: caret ? 1 : 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transform: pressed ? "scale(0.9)" : undefined,
           }}
-        />
-      </div>
-      <div style={{ position: "absolute", left: 24, bottom: 16, fontSize: 28, color: "#8f8695", lineHeight: 1 }}>+</div>
-      <div
-        data-anchor="send"
-        style={{
-          position: "absolute",
-          right: 16,
-          bottom: 14,
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: color.ink,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transform: `scale(${pressed ? 0.9 : 1})`,
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 20 20">
-          <path d="M10 16 V4 M4.5 9.5 L10 4 L15.5 9.5" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-export function UserBubble({ text, at }: { text: string; at: number }) {
-  const frame = useCurrentFrame();
-  const t = ramp(frame, at, at + 12);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 76,
-        left: CHAT.column.x + 180,
-        width: CHAT.column.w - 180,
-        display: "flex",
-        justifyContent: "flex-end",
-        visibility: frame >= at ? "visible" : "hidden",
-        opacity: t,
-        transform: `translateY(${(1 - t) * 16}px)`,
-      }}
-    >
-      <div style={{ backgroundColor: "#f2eef5", borderRadius: 20, padding: "14px 20px", fontSize: 21, lineHeight: "30px" }}>{text}</div>
-    </div>
-  );
-}
-
-/** One line of the agent's reply; mounted from the start and shown at `at`. */
-export function ReplyLine({ at, children, gap = 0 }: { at: number; children: ReactNode; gap?: number }) {
-  const frame = useCurrentFrame();
-  const t = ramp(frame, at, at + 10);
-  return (
-    <div style={{ marginTop: gap, visibility: frame >= at ? "visible" : "hidden", opacity: t, transform: `translateY(${(1 - t) * 10}px)` }}>
-      {children}
-    </div>
-  );
-}
-
-const mono = { fontFamily: fonts.mono } as const;
-
-/** The agent announcing the skill it picked up, and the file it read. */
-export function SkillUse({ at, label, name, file, lines }: { at: number; label: string; name: string; file?: string; lines?: number }) {
-  return (
-    <ReplyLine at={at}>
-      <div data-anchor="skill" style={{ display: "inline-flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 10, padding: "6px 14px 6px 10px", borderRadius: 999, backgroundColor: "#efe7fb", fontSize: 18 }}>
-          <svg width="18" height="18" viewBox="0 0 18 18">
-            <path d="M9 1.5 L10.9 7.1 L16.5 9 L10.9 10.9 L9 16.5 L7.1 10.9 L1.5 9 L7.1 7.1 Z" fill={color.violet} />
-          </svg>
-          <span style={{ color: color.muted }}>{label}</span>
-          <span style={{ fontWeight: 600, color: color.ink }}>{name}</span>
+        >
+          <ArrowUp size={22} color="#fff" weight="bold" />
         </div>
-        {file && (
-          <div style={{ ...mono, fontSize: 15, color: color.muted, paddingLeft: 12 }}>
-            Read {file} {lines !== undefined && <span style={{ color: "#a79fae" }}>({lines} lines)</span>}
-          </div>
-        )}
       </div>
-    </ReplyLine>
-  );
-}
-
-export type ToolLine = { text: string; tone?: "plain" | "error" | "strong" };
-
-/** A command the agent ran, with what it printed. Lines appear `every` frames apart from `outputAt`. */
-export function ToolCard({
-  at,
-  verb,
-  command,
-  output,
-  outputAt,
-  every = 2,
-  anchor,
-  gap = 12,
-}: {
-  at: number;
-  verb: string;
-  command: string;
-  output: ToolLine[];
-  outputAt: number;
-  every?: number;
-  anchor?: string;
-  gap?: number;
-}) {
-  const frame = useCurrentFrame();
-  const running = frame >= at && frame < outputAt;
-  return (
-    <ReplyLine at={at} gap={gap}>
-      <div data-anchor={anchor} style={{ border: `1px solid ${color.line}`, borderRadius: 14, overflow: "hidden", backgroundColor: "#fcfbfd" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", fontSize: 15, borderBottom: output.length ? `1px solid ${color.line}` : "none" }}>
-          <span style={{ ...mono, color: color.violet, fontWeight: 600 }}>{">_"}</span>
-          <span style={{ color: color.muted }}>{running ? "Running" : verb}</span>
-          <span style={{ ...mono, color: color.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{command}</span>
-        </div>
-        {output.length > 0 && (
-          <div style={{ padding: "8px 14px 10px", ...mono, fontSize: 15.5, lineHeight: "23px" }}>
-            {output.map((line, index) => (
-              <div
-                key={index}
-                data-anchor={anchor ? `${anchor}-${index}` : undefined}
-                style={{
-                  visibility: frame >= outputAt + index * every ? "visible" : "hidden",
-                  whiteSpace: "pre-wrap",
-                  color: line.tone === "error" ? color.rose : color.ink,
-                  fontWeight: line.tone === "strong" ? 600 : 400,
-                }}
-              >
-                {line.text || " "}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </ReplyLine>
-  );
-}
-
-export function AgentText({ at, children, gap = 12, anchor }: { at: number; children: ReactNode; gap?: number; anchor?: string }) {
-  return (
-    <ReplyLine at={at} gap={gap}>
-      <div data-anchor={anchor} style={{ fontSize: 20, lineHeight: "29px" }}>
-        {children}
-      </div>
-    </ReplyLine>
-  );
-}
-
-/** The bottom bar while the agent works: no typing, a quiet status. */
-export function WorkingBar({ label }: { label: string }) {
-  const frame = useCurrentFrame();
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: CHAT.column.x,
-        width: CHAT.column.w,
-        top: CHAT.composer.y + 30,
-        height: 64,
-        borderRadius: 22,
-        border: "1px solid #e2dce7",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        paddingLeft: 22,
-        fontSize: 18,
-        color: color.muted,
-      }}
-    >
-      {[0, 1, 2].map((dot) => (
-        <div key={dot} style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color.violet, opacity: 0.35 + 0.65 * Math.max(0, Math.sin((frame - dot * 5) / 6)) }} />
-      ))}
-      {label}
     </div>
   );
+}
+
+export type ScrollKey = { at: number; s: number };
+
+/**
+ * Scroll keys that follow each new item: when an item appears, the log eases over 18 frames until
+ * its bottom sits 24px above the composer. An item at or before frame 0 is already there when the
+ * shot opens (a conversation continued from the shot before).
+ */
+export function chatScroll(items: { at: number; anchor: string }[], boxes: Record<string, Box>): ScrollKey[] {
+  const target = (anchor: string) => {
+    const box = boxes[anchor];
+    return box ? Math.max(0, box.y + box.h - CHAT_VIEWPORT + 24) : 0;
+  };
+  const opened = items.reduce((s, item) => (item.at <= 0 ? Math.max(s, target(item.anchor)) : s), 0);
+  const keys: ScrollKey[] = [{ at: 0, s: opened }];
+  items.forEach((item, index) => {
+    if (item.at <= 0) return;
+    const next = items.slice(index + 1).find((later) => later.at > item.at)?.at ?? item.at + 30;
+    const from = keys[keys.length - 1].s;
+    keys.push({ at: item.at, s: from }, { at: Math.min(item.at + 18, next), s: Math.max(from, target(item.anchor)) });
+  });
+  return keys;
+}
+
+/** Stage box of an anchor measured on the log, at the scroll it has on `frame`. */
+export function logStageBox(box: Box | undefined, keys: ScrollKey[], frame: number) {
+  if (!box) return undefined;
+  const scroll = keyed(frame, keys, "s");
+  return { x: WIN.x + CHAT.log.x + box.x, y: WIN.y + BAR + CHAT.log.top + box.y - scroll, w: box.w, h: box.h };
 }

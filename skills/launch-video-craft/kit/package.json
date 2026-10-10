@@ -17,6 +17,7 @@
     "finish": "node scripts/gate.mjs && node scripts/finish.mjs"
   },
   "dependencies": {
+    "@phosphor-icons/react": "2.1.10",
     "@remotion/cli": "4.0.531",
     "@remotion/google-fonts": "4.0.531",
     "react": "19.2.4",

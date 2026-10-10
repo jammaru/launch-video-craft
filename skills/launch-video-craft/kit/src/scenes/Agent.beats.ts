@@ -25,12 +25,12 @@ export const timing = {
   typePerFrame,
   sendCursor: send - 6,
   send,
+  // When each item of the log appears; a tool card's output starts 4 frames after its card.
   reply: send + 4,
-  skill: send + 8,
-  tool: send + 20,
-  toolOutput: send + 32,
-  toolCamera: send + 44,
+  using: send + 12,
+  tool: send + 24,
   answer: send + 50,
+  toolCamera: send + 44,
 };
 
 if (typed > timing.sendCursor) throw new Error(`Agent: typing ends at ${typed}, after the cursor leaves for send`);
@@ -40,7 +40,7 @@ export const beats = assertBeats("Agent", {
   headline: { in: timing.headlineIn, out: timing.headlineOut, words: copy.agent.headline.split(" ").length },
   window: { in: timing.windowIn, landed: timing.windowLanded, real: { capture: "src/captured/demo.json" } },
   actions: [
-    { name: "focus", target: "composer-text", camera: timing.composerCamera, cursor: timing.focusCursor, press: timing.focus, result: timing.typeStart, resultCamera: timing.typeStart, holdUntil: timing.send, scale: 1.9, proves: true },
-    { name: "send", target: "send", resultTarget: "reply", camera: timing.composerCamera, cursor: timing.sendCursor, press: timing.send, result: timing.skill, resultCamera: timing.toolCamera, holdUntil: durations.Agent, scale: 1.9 },
+    { name: "focus", target: "composer-text", camera: timing.composerCamera, cursor: timing.focusCursor, press: timing.focus, result: timing.typeStart, resultCamera: timing.typeStart, holdUntil: timing.send, scale: 1.75, proves: true },
+    { name: "send", target: "send", resultTarget: "tool", camera: timing.composerCamera, cursor: timing.sendCursor, press: timing.send, result: timing.reply, resultCamera: timing.toolCamera, holdUntil: durations.Agent, scale: 1.75 },
   ],
 });

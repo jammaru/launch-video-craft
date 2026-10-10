@@ -31,9 +31,9 @@ const cues: Record<SceneId, Cue[]> = {
     [agent.focus, "click"],
     ...keys(agent.typeStart, typingEnd(agent.typeStart, copy.agent.prompt, agent.typePerFrame)),
     [agent.send, "click"],
-    [agent.skill, "chime", 0.45],
+    [agent.using, "chime", 0.45],
     [agent.tool, "pop", 0.35],
-    [agent.toolOutput, "pop", 0.5],
+    [agent.answer, "pop", 0.5],
   ],
 };
 

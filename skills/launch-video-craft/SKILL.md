@@ -170,7 +170,7 @@ The photograph is the world behind the product windows only. The hook, every hea
 - Words share one origin and one scale so they keep one baseline. Store the offset as a constant.
 - Animate the parts in the name shot. The end card shows it assembled. No other shot carries the logo. A lockup that contains the name is the name: do not set the name again in type under it.
 
-**Type.** Three roles: display for headlines, the product's UI face for the shell, mono for code and JSON. Latin from a webfont with an explicit small subset. Japanese from a system face on the machine; full CJK webfonts stall the render.
+**Type.** Three roles: display for headlines, the product's UI face for the shell, mono for code and JSON. A surface the product lacks (the agent chat, the terminal) keeps the kit's faces, Inter Tight and JetBrains Mono, so every film's agent looks the same. Latin from a webfont with an explicit small subset. Japanese from a system face on the machine; full CJK webfonts stall the render.
 
 ### 5. Motion and cut
 

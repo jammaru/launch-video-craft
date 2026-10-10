@@ -403,23 +403,23 @@ Errors name the coordinates (`the cursor presses at (408, 297), 113px off "promp
 
 ## Chat and logs
 
-A chat or log grows over time. Put each message in a wrapper with an index, give the reveals one frame array, and measure each wrapper's bottom. Scroll target for item `i` is `max(0, bottom_i - viewport + margin)`. Hold the scroll until the item appears, then ease to its target over about 18 frames. The camera reads the same scroll value when it frames an item.
+A chat or log grows over time. Each message is one item, mounted from the start, with the frame it appears at. `chatScroll` in `kit/src/components/Chat.tsx` measures each item's bottom: the scroll target for an item is `max(0, bottom - viewport + 24)`, held until the item appears, then eased to over 18 frames. An item at or before frame 0 is already there, so a shot can continue the conversation of the shot before. The camera reads the same scroll (`logStageBox(box, keys, frame)`) when it frames an item.
 
 Type the prompt into the composer character by character, with a blinking caret, and a tick sound every few frames. The send click lands on a beat; the message appears in the log a few frames later.
 
-Render captured JSON as code lines that appear two frames apart.
-
-**An agent doing the work.** `kit/src/components/Chat.tsx` has the pieces. The person's part is the composer: cursor to the field, type, cursor to Send, press. After that:
+**An agent doing the work.** `Chat.tsx` has the pieces, and they look one way in every film: Inter Tight for what is said, JetBrains Mono for commands and output (`fonts.chat`, `fonts.mono`), Phosphor icons. The person's part is the composer: cursor to the field, type, cursor to Send, press. After that, each item sits in a `Reveal` that fades in and rises 26px over 14 frames, inside `ChatLog`:
 
 | Piece | Shows | Source |
 | --- | --- | --- |
-| `SkillUse` | "Using skill <name>", then `Read <file> (<n> lines)` | the installed file |
-| `ToolCard` | `Running` while it runs, then `Ran <command>` and the output lines, 2 frames apart | capture |
-| `AgentText` | one or two sentences in the agent's voice | film copy |
-| `ToolCard` with no output | `Wrote <file>` | the file the fix changed |
-| `WorkingBar` | replaces the composer while the agent works | film copy |
+| `UserBubble` | the prompt, right-aligned on a gray bubble | film copy |
+| `AgentText` | one or two sentences in the agent's voice: which skill it uses, what it found, what it will change | film copy |
+| `ToolCard kind="run"` | gray header: terminal icon, `Ran`, the command in mono; the output lines below, 2 frames apart | capture |
+| `ToolCard kind="read" \| "write"` with no lines | `Read <file>` or `Wrote <file>`, the header alone | the file read or changed |
+| `ToolCard kind="tool"` | an MCP or API call: `Tool call`, the tool name, its arguments as code lines | capture |
+| `Done` | green line with a check: what passed, and the captured detail on the right | capture |
+| `Composer` | the field, a chip naming the skill or tool, and Send; it stays after Send with its placeholder | film copy |
 
-These beats are read-only in the beat sheet: no `cursor`, no `press`. The cursor leaves the reply after Send. Show at most about six lines of a long output and end with `… N more`, the way agent UIs collapse it, so the next step stays in the window. The camera frames a card by its left edge plus half the view width (960 / scale), not its center. Color keys and strings, and pill the decisive value (`block`, `allow`) so the camera has one thing to read.
+These beats are read-only in the beat sheet: no `cursor`, no `press`. The cursor leaves the reply after Send. Show at most about six lines of a long output and end with `… N more`, the way agent UIs collapse it, so the next step stays in the window. The log column is 1000px, so a card stays whole at scale 1.8; frame a card with `fit` on its item. Color keys and strings, and pill the decisive value (`block`, `allow`) so the camera has one thing to read. The terminal (`Terminal.tsx`) uses the same mono face, so a film that has both reads as one set.
 
 ## Type
 

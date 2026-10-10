@@ -1,11 +1,8 @@
 {
-  "at": "2026-10-10T15:11:27.097Z",
-  "film": "../../../video/llm-abi.mp4",
-  "seconds": 35.669,
-  "failures": [
-    "the film is 35.67s; the shots add up to 15.00s",
-    "nothing on screen from 28.2s to 31.8s (end): a flat frame, often type the same colour as its field"
-  ],
+  "at": "2026-10-10T18:46:49.512Z",
+  "film": "../launch.mp4",
+  "seconds": 15.019,
+  "failures": [],
   "stills": [
     {
       "shot": "Command",

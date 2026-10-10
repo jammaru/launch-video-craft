@@ -8,7 +8,7 @@ Copy the decisions. Do not copy the film. The clapperboard, the lavender salt ma
 
 - **The real screen is the real output.** The install shot shows the bytes `npx skills add` printed into an empty project. The agent's tool cards show what `ffprobe` and `remotion still` printed. Nothing in a terminal or tool card was typed by hand.
 - **The person types twice.** The first cut had the person typing commands into a terminal after the prompt. The user rejected it: with a skill, a person types the install command and one prompt, and the agent does the rest. Ask and Check became one agent conversation. After Send, the cursor leaves the reply and never presses again.
-- **The agent's steps are tool cards, not typing.** A "Using skill" chip, the file it read and its line count, `Ran <command>` with the captured output, a sentence of diagnosis, `Wrote <file>`, and `Ran` again. A working bar replaces the composer while the agent works.
+- **The agent's steps are tool cards, not typing.** A sentence naming the skill it uses, `Ran <command>` with the captured output, `Wrote <file>`, a sentence of diagnosis, `Ran` again, and a green `Done` line with the passing output. Each item rises into the log and the log scrolls to follow it.
 - **The failure is real.** A deliberately drifting beat sheet goes through the real renderer, which fails with `assertBeats` reasons. The fixed sheet renders. The capture asserts both outcomes, so a passing "failure" cannot ship.
 - **The payoff is the product's output.** The last product shot plays a finished film made with the skill in a plain player.
 - **The logo moves the way the object moves.** The clapperboard's stick is cut from the body along its hinge and claps shut once when the name lands.
@@ -16,13 +16,13 @@ Copy the decisions. Do not copy the film. The clapperboard, the lavender salt ma
 
 ## The film
 
-Reference: a 40-second, 24fps launch clip with windows on a landscape, a large cursor, and fast zooms. The film is 44.5 seconds, seven shots, 30fps.
+Reference: a 40-second, 24fps launch clip with windows on a landscape, a large cursor, and fast zooms. The film is 43 seconds, seven shots, 30fps.
 
 | Shot | Frames | Picture | Headline |
 | --- | --- | --- | --- |
 | Install | 210 | Terminal already on the marsh; `npx skills add …` typed, its real output streams, zoom on the installed line | none (the reference opens on a window) |
 | Name | 105 | Paper field; clapperboard parts assemble and clap; name and tagline | |
-| Ask | 330 | Agent chat. One prompt typed and sent. "Using skill", SKILL.md read, `ffprobe` card, Borrow / Do not draw, beat map | "Hand it a clip and a logo." |
+| Ask | 290 | Agent chat. One prompt typed and sent. "Using launch-video-craft", `ffprobe` card, `Wrote NOTES.md` with the beat map | "Hand it a clip and a logo." |
 | Check | 255 | Same chat, no input: drifting render fails with reasons, diagnosis, wrote the fixed sheet, render passes | "It rejects a cut that drifts." |
 | Film | 210 | Player window; play pressed; a film made with the skill plays, zoomed | "You get the film." |
 | Principles | 105 | Three lines on ink | |
@@ -33,15 +33,15 @@ Beat sheet of the agent shot (Check), all read-only beats, `proves` on the rejec
 | Frame | Picture | Text on screen |
 | --- | --- | --- |
 | 2–36 | Quiet field | "It rejects a cut that drifts." |
-| 40–70 | Chat window rises and lands | the skill chip from the previous shot |
-| 76 | Tool card `Running npx remotion still … DriftingCut` | captured command |
-| 94→ | `An error occurred:`, `Build beats:`, six reasons, `… 6 more` | captured output, 2 frames a line |
-| 72→106 | Camera to the card, scale 1.6 | |
-| 140–172 | Camera on the first reasons, scale 2 | |
-| 172 | Agent: what drifted, retiming it | film copy |
-| 184, 192 | `Wrote src/checks/build-fixed.beats.ts`, `Ran … FixedCut` | |
-| 206 | `Rendered 1/1` | captured output |
-| 216–255 | Camera on the passing render, scale 1.9 | |
+| 40–70 | Chat window rises and lands | the conversation from Ask, already there |
+| 74 | Agent: rendering each shot against its beat sheet | film copy |
+| 84, 88→ | Card `Ran npx remotion still … DriftingCut`; `An error occurred:`, six reasons, `… 6 more` | captured output, 2 frames a line |
+| 72→104–136 | Camera to the card, scale 1.6 | |
+| 140 | Agent: what drifted, retiming it | film copy |
+| 154, 166 | `Wrote src/checks/build-fixed.beats.ts`, `Ran … FixedCut` with `Rendered 1/1` | captured output |
+| 150–182 | Camera on the diagnosis and the fix, scale 1.7 | |
+| 190 | Green `Done`: "Beat check passed", `Rendered 1/1` | captured output |
+| 200–255 | Camera on the passing line, scale 1.8 | |
 
 ## Capture
 
@@ -60,9 +60,9 @@ The check compositions are registered with `lazyComponent`, so the drifting shee
 - A terminal row is a full-width block, so its center is the middle of the window. Anchor the text span, not the row.
 - While a command is being typed, its width changes every frame. Measure the prompt (`~/my-product $`), which is stable, and compute the line's center from the character width.
 - At scale 2 the view is 960px wide. Frame a line by its left edge plus 480, not by its center, or long commands lose their start.
-- A collapsed tool card (`… 6 more`) is how agent UIs show long output, and it kept the passing render on screen. Twelve reasons had pushed it under the working bar.
-- A card's background must hide with its first line. The beat-map card showed an empty lilac box before the reply.
-- A flex child in a column stretches. The skill chip spanned the whole column until it was given `align-self: flex-start`.
+- A collapsed tool card (`… 6 more`) is how agent UIs show long output, and it kept the passing render on screen. Twelve reasons had pushed it under the composer.
+- A card appears whole, as one item, with its lines following 2 frames apart. A card whose header showed `Running` above an empty body read as a blank box for half a second.
+- A log column of 1140px was wider than the view at scale 1.7: the prompt, the Send button, and the right of the green line were cut. At 1000px every card stays whole at 1.8.
 - When the film inside the player has its own cursor, hide yours during the watch zoom. Two cursors read as a glitch.
 
 ## Logo
