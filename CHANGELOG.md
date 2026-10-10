@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 - 2026-10-11
+
+Two films of a product with a web playground passed every check while showing a UI the agent wrote itself after reading the product's renderer: tabs and panels the product does not have.
+
+- The kit renders the product's real page: `shootProduct` (capture/lib.mjs) copies the product's own build to `public/product/` and screenshots it with Remotion's headless browser at the window's size; `useProduct` and `<ProductFrame>` load that build in the window, find anchors in the product's own markup, and measure before `continueRender`.
+- Every `Window` names its source in the beat sheet (`window.real`: the screenshot, or the captured JSON). `npm run verify` compares the landed window with the screenshot (`scripts/similar.py`, edge match 0.5 or more; the real page scored 0.88–0.98, the two lookalikes 0.16–0.19) and fails a scene that draws a web UI without `ProductFrame`.
+- SKILL.md: "Do not write the product's UI yourself"; the iframe rule is replaced by `ProductFrame`'s measured, URL- or `prepare`-driven states.
+
 ## 0.7.4 - 2026-10-11
 
 - Verify renders every result and hold-end frame again without the debug overlay and fails when type is cut by an edge of the frame (`scripts/edges.py`). Measured on a film: every frame with a sliced line scored 0.9–46% of an edge; clean frames 0.

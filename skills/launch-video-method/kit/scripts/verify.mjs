@@ -5,7 +5,9 @@
 //   headline (mid-read and mid-exit), landed (window at rest), and per action: press, result, hold end.
 // Shots without a beat sheet (title, logo, end card) get 3 stills.
 // Then it checks: no guessed fallback coordinates in scenes, every still rendered
-// (assertBeats / assertFraming did not throw), and type on flat fields is readable.
+// (assertBeats / assertFraming did not throw), type on flat fields is readable, held frames
+// do not cut type, every window shows the product's real page or captured output, and the
+// backdrop has no writing.
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -144,7 +146,57 @@ for (const [id, b] of Object.entries(sheets)) {
   }
 }
 
-// 6. The backdrop photograph has no writing in it. Image models paint the words of their prompt
+// 6. The window shows the product, not a lookalike. A web page must be the product's own build in
+// ProductFrame, and its landed frame must match the screenshot shootProduct took of that build.
+// A terminal or agent window must render the captured JSON it names.
+const pairs = [];
+const sceneText = (id) => ["tsx", "beats.ts"].map((ext) => join(scenesDir, `${id}.${ext}`)).filter(existsSync).map((f) => readFileSync(f, "utf8")).join("\n");
+const sheetsLoaded = Object.keys(sheets).length === beatFiles.length;
+for (const id of sheetsLoaded ? Object.keys(durations) : []) {
+  if (/<Window\b/.test(sceneText(id)) && !sheets[id]?.window) failures.push(`${id}: the scene draws a Window but its beat sheet has no window (with window.real), so nothing checks what it shows`);
+}
+for (const [id, b] of Object.entries(sheets)) {
+  const real = b.window?.real;
+  if (!real) continue;
+  const scene = sceneText(id);
+  if (real.capture) {
+    const name = real.capture.split("/").pop();
+    if (!existsSync(join(here, real.capture))) failures.push(`${id}: window.real.capture ${real.capture} does not exist; run npm run capture`);
+    else if (!new RegExp(`import .* from ["'][^"']*${name.replace(/\./g, "\\.")}["']`).test(scene)) failures.push(`${id}: the scene does not import ${real.capture}, so the window is not showing what was captured`);
+    else if (!/from ["']\.\.\/components\/(Terminal|Chat)["']|from ["'][^"']*vendor\//.test(scene)) {
+      failures.push(`${id}: window.real.capture is for a terminal, an agent, or a page drawn with the product's shipped CSS (src/vendor/); a web page the product builds is shot with shootProduct and shown with ProductFrame`);
+    }
+    continue;
+  }
+  const shot = join(here, real.screenshot);
+  const record = existsSync(join(here, "capture/real/real.json")) ? JSON.parse(readFileSync(join(here, "capture/real/real.json"), "utf8")) : { shots: {} };
+  if (!existsSync(shot) || !Object.values(record.shots).some((s) => s.screenshot === real.screenshot)) {
+    failures.push(`${id}: ${real.screenshot} was not taken by shootProduct (capture/lib.mjs); shoot the product's built page in npm run capture`);
+    continue;
+  }
+  if (!existsSync(join(here, "public/product"))) failures.push(`${id}: public/product/ is missing; shootProduct copies the product's build there`);
+  if (!/<ProductFrame\b/.test(scene) || !/useProduct\(/.test(scene)) {
+    failures.push(`${id}: the scene does not render the product's page with useProduct + <ProductFrame>; a redrawn copy of the UI is not the product`);
+    continue;
+  }
+  const composition = await selectComposition({ serveUrl, id: `Shot-${id}` });
+  const output = join(reviewDir, id, `clean-${String(b.window.landed + 2).padStart(4, "0")}-real.png`);
+  try {
+    await renderStill({ composition, serveUrl, frame: b.window.landed + 2, output, imageFormat: "png" });
+    pairs.push(real.screenshot, relative(here, output), "150,137,1620,889");
+  } catch {
+    // Reported by the debug render.
+  }
+}
+if (pairs.length) {
+  const out = execFileSync("python3", [join(here, "scripts/similar.py"), ...pairs], { cwd: here, encoding: "utf8" });
+  for (const line of out.trim().split("\n").filter(Boolean)) {
+    const result = JSON.parse(line);
+    if (!result.ok) failures.push(`${result.file}: ${result.problems.join("; ")}`);
+  }
+}
+
+// 7. The backdrop photograph has no writing in it. Image models paint the words of their prompt
 // (a product name, "launch") into skies and signs; tesseract finds them when it is installed.
 const backdrop = join(here, "public/backdrop.jpg");
 if (existsSync(backdrop)) {

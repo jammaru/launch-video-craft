@@ -38,7 +38,7 @@ if (typed > timing.sendCursor) throw new Error(`Agent: typing ends at ${typed}, 
 export const beats = assertBeats("Agent", {
   duration: durations.Agent,
   headline: { in: timing.headlineIn, out: timing.headlineOut, words: copy.agent.headline.split(" ").length },
-  window: { in: timing.windowIn, landed: timing.windowLanded },
+  window: { in: timing.windowIn, landed: timing.windowLanded, real: { capture: "src/captured/demo.json" } },
   actions: [
     { name: "focus", target: "composer-text", camera: timing.composerCamera, cursor: timing.focusCursor, press: timing.focus, result: timing.typeStart, resultCamera: timing.typeStart, holdUntil: timing.send, scale: 1.9, proves: true },
     { name: "send", target: "send", resultTarget: "reply", camera: timing.composerCamera, cursor: timing.sendCursor, press: timing.send, result: timing.skill, resultCamera: timing.toolCamera, holdUntil: durations.Agent, scale: 1.9 },

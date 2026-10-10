@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.7.4"
+  version: "0.8.0"
 ---
 
 # Launch videos in Remotion
@@ -24,7 +24,7 @@ Start the project from [kit/](kit/), not from an empty folder. It already has th
 A reference clip is someone else's product. Tracing its graphics makes the film look like that product. Drawing the UI by hand makes it look unlike the thing being launched. So split the job:
 
 - From the reference: the shape of the story (what each scene is for, and in what order), and its film grammar (how windows enter, when the camera zooms, a cursor that presses). Not its length, not its shot count, not its content.
-- From the product: every screen, number, and sentence, drawn by the product's own renderer.
+- From the product: every screen, number, and sentence, drawn by the product's own renderer. The window shows the product's real page or components, never a version written for the film; `npm run verify` compares it with a screenshot of the real thing.
 - New: the backdrop photograph, the music, and the logo animation. Nothing is lifted from the reference.
 
 ## Phases
@@ -63,10 +63,10 @@ Do these in order. Each line ends with a check that must pass before the next.
 1. `cp -R <skill>/kit video/<name>` and `npm install` inside it. The folder is ignored by git (see above).
 2. `npm run sync`: copies `assertBeats` from this skill's reference.md into `src/lib/beats.ts`. Set `SKILL_DIR` if it cannot find the skill. Check: the file exists.
 3. Fill `NOTES.md` through phase 2 before touching a scene. Check: every section up to Shots has content.
-4. Replace `capture/capture.mjs` with the product's real commands (phase 3). `npm run capture`. Check: it exits 0 and each claim is asserted.
+4. Replace `capture/capture.mjs` with the product's real commands (phase 3). If the product builds a web page, build it and call `shootProduct` there for each shot that shows it. `npm run capture`. Check: it exits 0, each claim is asserted, and `capture/real/<Shot>.png` is the real page.
 5. Put the backdrop at `public/backdrop.jpg` (phase 4), the logo layers in `public/logo/`, and `npm run audio`.
 6. One shot at a time: fill its row in NOTES.md "What each shot shows" (the one thing, its `data-anchor`, the gesture), copy the closer demo (`Command` for a person typing, `Agent` for an agent working), write its `beats.ts` with `target` and `resultTarget`, then the scene. Register it in `src/Film.tsx` and `src/scenes/durations.json`. Delete the demos when your shots exist.
-7. `npm run typecheck`, then `npm run verify`. It renders the press, result, and hold of every action with the anchors outlined and the cursor tip marked, and fails on a guessed coordinate, a broken beat sheet, a miss in space, or unreadable type. Check: it prints "Machine checks passed". Retime or re-anchor; do not loosen a check.
+7. `npm run typecheck`, then `npm run verify`. It renders the press, result, and hold of every action with the anchors outlined and the cursor tip marked, and fails on a guessed coordinate, a broken beat sheet, a miss in space, unreadable type, or a window that is not the product's real UI. Check: it prints "Machine checks passed". Retime or re-anchor; do not loosen a check.
 8. Open every `review/<Shot>-sheet.png`, write what each shows under "Stills checked" in NOTES.md, then the rest of phase 7. `npm run render` refuses until verify is clean, newer than every source file, and each shot has its line.
 9. `npm run render`. It renders, then inspects the finished mp4 (`review/film-sheet.png`). Open the sheet, write "Film checked" in NOTES.md (one line for the backdrop, one per shot), and `npm run finish`. Check: it prints "Finished". Only then report to the user.
 
@@ -89,7 +89,7 @@ Run `npm run verify` again after every change, however small. A film is verified
 2. The action the product takes, and the control that changes how it acts.
 3. Every actor that can trigger that action (a person, an API, an agent, a schedule). Keep only actors the product really handles.
 4. The constraints it is built around. They become one-line principles later.
-5. How the UI is rendered: which component draws it, which compiled CSS styles it, which icon set and fonts it uses, and where its translations live.
+5. How the UI is rendered: which component draws it, which compiled CSS styles it, which icon set and fonts it uses, and where its translations live. Then how the film will show it, from the table in [reference.md](reference.md#showing-the-real-ui): the product's built page in `ProductFrame`, its components with the shipped CSS, or a terminal. Write the choice in NOTES.md. Reading the renderer is how you find what to load, not a spec to rewrite.
 
 **When the product has no screen** (a CLI, a library, an API, an agent skill), the output of running it is its real screen. The terminal that runs the command and the agent chat that calls it are the shells; the bytes inside them are captured. Find, from the README and the source: the one command a person types to get it, the one prompt a person gives an agent, every command or tool the agent runs because of it, and the file or result a user leaves with. Those are the shots.
 
@@ -145,9 +145,13 @@ UI language and content language are separate settings. A translated shell with 
 - Rebuilt shell: window chrome, navigation, editor fields around that surface. Match screenshots, use the design system's tokens, the product's icon set, and real translated labels.
 - A surface the product lacks: generic and quiet, so attention stays on the captured text inside it.
 
-**Prove the renderer first.** One still of captured data through the real component and the shipped compiled CSS. If it is unstyled, the stylesheet or theme attributes are wrong. No scene until this still is right. If the component will not import, fix the import. Copying `docs/*.png` into an `<Img>` is a failed proof: the zoom goes soft, and nothing on it can be measured or clicked. Do not continue the film on screenshots.
+**The window is the product, and verify checks it.** Every `Window` names where its contents came from in its beat sheet (`window.real`), and verify fails without it. The steps are in [reference.md](reference.md#showing-the-real-ui):
 
-**Render the product in the film's DOM, not in an iframe.** Each frame renders in a fresh page, so a click sent into an iframe does not persist, and anchors measured after `continueRender` arrive too late for some frames. If an iframe is the only way, follow [reference.md](reference.md#click-targets): measure before `continueRender`, put state in the URL, hide the product's demo chrome.
+- The product builds a web page (a playground, a demo, a static dashboard): run its build, `shootProduct` it in the capture, and show it with `useProduct` and `<ProductFrame>`. Anchors are found in the product's own markup (`byText`, `bySelector`); state comes from its URL or from `prepare` driving its own controls. Verify renders the landed frame and compares it with the screenshot; a lookalike scores far below the 0.5 it needs.
+- The product's UI needs a server: import its components and its shipped compiled CSS, feed them captured data, and put one still beside a screenshot of the real app before any scene.
+- No screen: the terminal and the agent chat, with captured output.
+
+Do not write the product's UI yourself. Reading `render.ts` and `styles.css` and then drawing panels, tabs, and badges in your own JSX with inline styles produces a different product: one film showed tabs the product does not have. If the page will not load in `ProductFrame` or a component will not import, fix that; do not draw a substitute. Copying `docs/*.png` into an `<Img>` fails too: the zoom goes soft, and nothing on it can be measured or clicked.
 
 **Portals do not render in frames.** A dialog or toast that portals to `document.body` with `fixed` positioning will not sit in a zoomed window. Read its copy from the capture and draw it in normal flow with the same components and classes.
 
@@ -203,6 +207,7 @@ Do not show the user a film you have not rejected on a contact sheet. Verificati
 3. Reject the still, fix that scene, and run verify again while any of these are true. Do not start the film render during a reject.
    - The window is under about 1500×800, or sky surrounds it.
    - The surface inside it is a PNG. Put the component back.
+   - The surface was written for the film (its own JSX imitating the product) instead of the product's page in `ProductFrame` or its imported components.
    - The cursor's coordinates are literals in the scene, or the cursor is not a child of the camera.
    - The copy is Japanese and the user did not ask for Japanese.
    - `assertBeats` is missing from the shot, or the scene has frame numbers that are not in its `beats.ts`.
@@ -228,7 +233,7 @@ Open `review/film-sheet.png` and the full-size stills of anything that looks off
 
 Run `git status --short`: it shows nothing from the film. Leave the mp4 where it is and tell the user the path. Do not commit it or open a pull request.
 
-Tell the user, plainly: which parts are real product output, which are rebuilt shell, which are invented surfaces. Which assets were generated. Which font and machine the Japanese depends on. What you did not check (usually: you did not listen to the sound against the picture). How to re-render.
+Tell the user, plainly: which parts are real product output (and how: `ProductFrame` of its build, its components, or captured output), which are rebuilt shell, which are invented surfaces. Which assets were generated. Which font and machine the Japanese depends on. What you did not check (usually: you did not listen to the sound against the picture). How to re-render.
 
 ### 9. After the film
 
@@ -244,7 +249,7 @@ The announcement post is not the film's script. Write it plainly: "I made X!!", 
 - [ ] The backdrop prompt named only a place, and the backdrop has no writing, signs, logos, or people
 - [ ] `npm run finish` passed after the last render: the finished film was inspected and every shot looked at
 - [ ] Every product number and sentence on screen came from a capture
-- [ ] The hero frames are the real component, not a screenshot pasted into the window
+- [ ] The hero frames are the product's real page or components, not a screenshot pasted into the window and not a lookalike written for the film; every `Window` has `window.real` and verify compared it
 - [ ] At rest the window is about 1620×930 and the demonstrated UI fills it
 - [ ] The photograph sits behind product windows only; opening, logo, principles, and end card are flat fields
 - [ ] The only language is English, unless the user named another

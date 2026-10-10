@@ -62,6 +62,10 @@ Length: (the sum of the shots this product needs; say why each one is there. The
 
 - (each on-screen string: the capture file it comes from, or `src/copy.ts`)
 
+## How the product's UI is shown
+
+- (for each product shot: the product's built page in ProductFrame, shot with shootProduct, and the path of the build; or its components with the shipped CSS; or Terminal / agent chat with captured output. Never a UI written for the film.)
+
 ## What each shot shows
 
 | Shot | The one thing the viewer must see | Its data-anchor | Gesture that causes it |
