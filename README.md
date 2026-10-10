@@ -1,12 +1,10 @@
-<p align="center">
-  <img src="assets/logo.png" alt="Launch Video Craft" width="220">
-</p>
+<img src="assets/logo.png" alt="Launch Video Craft" width="220">
 
-<h1 align="center">Launch Video Craft</h1>
+# Launch Video Craft
 
-<p align="center"><em>ローンチ動画を Remotion で作る Agent Skill</em></p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
----
+## これは何？
 
 自分でプロダクトを作ったら、ローンチのときに短いローンチ動画を作ることが多いと思います。一方で、SNS でよく見かけるおしゃれなローンチ動画を、ちゃんと作るのは難しい。
 
