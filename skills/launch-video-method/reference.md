@@ -100,7 +100,7 @@ A portal positions against the browser viewport, so it cannot follow a camera. R
 
 **Backdrop.** `objectFit: cover`, scale about 1.06 with a slow sine breath, and a translate of about 0.08px per frame. Movement you barely notice keeps a still from looking frozen.
 
-**Window.** Absolute position on the 1920×1080 stage, radius about 18, a soft two-layer shadow, a 40px title bar with traffic lights. Enters from about 820px below with a spring, scale 0.9 → 1, origin at top center.
+**Window.** On the 1920×1080 stage, `{ x: 150, y: 96, w: 1620, h: 930 }`. Radius about 18, a soft two-layer shadow, a 40px title bar with traffic lights. Enters from about 820px below with a spring, scale 0.9 → 1, origin at top center. If a rendered frame shows meadow or sky wider than about 200px beside the window, the window is too small. Make it this size before you animate. The UI being demonstrated fills the window; do not center a small device in a large empty pane.
 
 **Camera.** Frames point `(x, y)` at the center:
 
@@ -109,9 +109,18 @@ transform-origin: 0 0
 transform: translate(960px, 540px) scale(s) translate(-x px, -y px)
 ```
 
-Keyframes are `{ at, x, y, scale }`, interpolated per segment with an ease-in-out bezier. Scale 1 for the establishing view, 1.4–1.5 for a region, 1.7–2.2 to read a line. Hold each read for 25–45 frames.
+Keyframes are `{ at, x, y, scale }`, interpolated per segment with an ease-in-out bezier. Copy this shape into every product shot, with new coordinates:
 
-**Cursor.** A child of the camera, in stage coordinates. Keyframes `{ at, x, y }`. On a click frame: scale dips about 18% over 10 frames, and a ring expands and fades over about 18 frames. Hide it until it is needed.
+```
+{ at: 0, scale: 1 }          // hold until about frame 70
+{ at: ~110, scale: 2.1 }     // the control
+{ at: ~170, scale: 2.2 }     // the result
+{ at: ~250, scale: 1.95 }    // the sentence
+```
+
+Scale 1 is the establishing view only. A region is 1.4–1.6. A line the viewer must read is 1.9–2.2. Hold each read for 25–45 frames. A product shot whose maximum scale is 1 is unfinished.
+
+**Cursor.** A child of the camera, in stage coordinates. The glyph is about 44×50px, black with a white stroke, tip at the keyframe. Keyframes `{ at, x, y }`. On a click frame: scale dips about 18% over 10 frames, and a ring expands and fades over about 18 frames. Hide it until it is needed. A product shot with no cursor did not borrow the reference.
 
 **Headline.** Reveal word by word, about 3 frames apart, each word rising from below its line over 16 frames. Exit upward with a fade about 14 frames, finished before the window lands. Shrink to fit about 1720px.
 
@@ -150,11 +159,15 @@ Load Latin from `@remotion/google-fonts` with `subsets: ["latin"]` and only the 
 
 ## Backdrop prompt
 
-Generate, never copy. A prompt that works:
+Generate, never copy. The photograph is only the world behind the product windows. Hook, logo, principles, and end card do not use it.
 
-> Wide 16:9 landscape photograph, rolling green hills with wildflowers in the lower third, large soft blue sky with a few light clouds, gentle daylight, shallow haze at the horizon, no people, no buildings, no text, no logos.
+Do not generate rolling green hills with yellow and white wildflowers. That place is the worked example's, and a later film copied it onto every shot.
 
-Change the place to suit the product, keep the structure: content low, empty sky high. Save as JPEG around 1920px wide.
+Keep the structure, change the place:
+
+> Wide 16:9 photograph of [a place that fits this product], the subject in the lower third, a large empty sky, soft daylight, no people, no text, no logos.
+
+Save as JPEG around 1920px wide.
 
 ## Logo layers
 
@@ -190,16 +203,33 @@ Effects: click (short filtered noise), tick (shorter), pop (rising sine), whoosh
 
 Regenerate the bed when any duration changes.
 
-## Review
+## Review and repair
 
 ```bash
+npx remotion render src/index.ts <Film> /tmp/draft.mp4 --scale=0.5 --log=error
 ffmpeg -i /tmp/draft.mp4 -vf "fps=1,scale=480:-1,tile=4x4" sheet_%02d.png
-ffmpeg -ss <seconds> -i /tmp/draft.mp4 -frames:v 1 hero.jpg
+ffmpeg -ss <seconds> -i /tmp/full.mp4 -frames:v 1 click.jpg
 ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate:format=duration out.mp4
 ffmpeg -i out.mp4 -af volumedetect -vn -f null -
 ```
 
-Sheets for rhythm. Full frames for the cursor, the zoomed sentence, and each locale. A bed around −20 dB mean, peak under 0 dB. Sheets cannot tell you a sound is late; say if you did not listen.
+Open the sheet and reject the film if any of these are true. Repair that shot, re-render it, and make a new sheet. Do not deliver past a reject.
+
+| What you see | Repair |
+| --- | --- |
+| Copy is not English, and the user did not name another language | Rewrite the copy file. Do not infer the language from the chat. |
+| The window is a small card with photograph on every side | Set the window to 1620×930 near (150, 96). Side gaps over about 200px fail. |
+| The thing being demonstrated is a small device inside an empty window | Make that surface fill the window. |
+| A product shot's frames all look alike | Add the scale pattern: hold 1, then 1.6 or more, and 1.9 or more on the sentence. |
+| No cursor on the click | Add the 44×50 glyph. Measure the tip onto the control. |
+| The photograph is behind the hook, the logo, the principles, or the end card | Those shots are a plain field. Paper or ink. The photograph stays behind the product windows. |
+| Principles has shapes, repeated logos, or the photograph | Type on ink, one line at a time. Keep the duration. |
+| The backdrop is green hills and wildflowers | Generate a different place. That one is the example's. |
+| The last row of the sheet is empty black for more than about a second | The fade is the last ~15 frames of the end card, not a dead tail. |
+| A full-frame click still shows the cursor missing the control by more than a few pixels | Fix the measurement. Ancestor transforms must be divided out. Re-render that shot. |
+| Zoomed type is cut off | Frame the sentence, not the middle of a full-width banner. Shrink Japanese lines if that locale was requested. |
+
+A bed around −20 dB mean, peak under 0 dB. The sheet cannot tell you a sound is late. Say so if you did not listen.
 
 ## Announcement post
 

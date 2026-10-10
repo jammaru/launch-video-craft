@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 - 2026-10-10
+
+- Default language is English. Another language is rendered only when the user names it.
+- The product window, the zoom, and the cursor are minimums: 1620×930, scale 1.9 on a line to be read, a 44×50 cursor.
+- The generated photograph sits behind the product windows only. Hook, logo, principles, and end card are a plain field.
+- Review is a reject list. A film that fails it is repaired and re-sheeted before delivery.
+
 ## 0.2.1 - 2026-10-10
 
 - The worked example now includes the capture harness: vitest rooted at the product repo, the host calls in order, the snapshot helper, and the tools each step used.

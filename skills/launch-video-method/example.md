@@ -51,6 +51,8 @@ Tools, and what each one did:
 
 1485 frames, 49.5 seconds. The bed is generated to that length. Change a duration and regenerate the bed.
 
+Picture scale. The admin window is `{ x: 150, y: 96, w: 1620, h: 930 }`. Product shots hold scale 1 for about two seconds, then zoom. The proof shot reaches 2.1 on the publish control and 2.2 on the toast. The cursor glyph is 44×50. The photograph is behind those product shots only. The hook, the logo, and the end card are on white. Principles is one line at a time on black. The end card fades to black over its last 14 frames. A later film that left a small window on the photograph for the whole running time, with no zoom and no cursor, had not followed this.
+
 The argument, one sentence: the same deterministic rules check a publish no matter who starts it, and they can stop it.
 
 | Reference beat | This film |

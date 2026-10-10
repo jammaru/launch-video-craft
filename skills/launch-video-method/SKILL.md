@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.2.1"
+  version: "0.2.2"
 ---
 
 # Launch videos in Remotion
@@ -44,7 +44,9 @@ Work in this order. Each phase writes something down before the next starts.
 
 ### 0. Inputs and prior work
 
-Collect three inputs: the reference clip, the logo file, and the locales. If any is missing, ask for that one only.
+Collect the reference clip and the logo file. If either is missing, ask for that one only.
+
+Language defaults to English. Render one film, in English. Do not ask which language. Do not translate because the request was written in Japanese. Another language is a second cut, and only when the user names it.
 
 Look for an earlier attempt before creating files: `.gitignore` lines for a video folder, an old mp4, a past conversation. Reuse its decisions or delete it deliberately. Do not build a second project beside a half-finished one.
 
@@ -54,7 +56,7 @@ The video is its own npm package in a gitignored folder. Remotion, React, and fo
 
 **The reference is a timing diagram.** Download it, `ffprobe` it, make contact sheets for the whole clip and a tight strip for one camera move. Watch once for the arc, once for a single zoom. Write:
 
-- Borrow: shot lengths, how a window enters, when the zoom happens and how far, cursor size, headline scale, how the ending breathes.
+- Borrow, with measurements, not adjectives: how many shots change field (photo, white, black), what fraction of the frame the window fills, how a window enters, when the zoom happens and how far, cursor size relative to a button, headline scale, how the ending breathes. A beat map of labels without these sizes is not research. The film that worked used a window of 1620×930 on a 1920×1080 stage. A window near 1040×640 leaves the photograph as the subject. That is a failed frame.
 - Do not draw: that brand's icons, illustrations, color shapes, layout gags. Name the ones you can point at in a frame. "Don't copy the vibe" is not a list.
 - Beat map: each reference beat, and what in this product plays the same role. A chat with an AI becomes this product's agent or API surface. Their logo lockup becomes this product's end card. A beat with no honest equivalent is dropped, not faked.
 
@@ -108,7 +110,9 @@ UI language and content language are separate settings. A translated shell with 
 
 **Portals do not render in frames.** A dialog or toast that portals to `document.body` with `fixed` positioning will not sit in a zoomed window. Read its copy from the capture and draw it in normal flow with the same components and classes.
 
-**Backdrop.** Generate a new photograph of the same kind of place as the reference: wide, low horizon, uncluttered sky where the windows sit, no people, text, or logos. Give it a slow drift. Where the product needs a content image (a featured image, a thumbnail), reuse the backdrop so the film has one world.
+**Backdrop.** Generate a new photograph of the same kind of place as the reference: wide, low horizon, uncluttered sky where the windows sit, no people, text, or logos. Give it a slow drift. Where the product needs a content image, reuse that photograph so the film has one world.
+
+The photograph is the world behind the product windows only. The hook, the logo, the principles, and the end card sit on a plain field, paper or ink. A film that leaves the photograph behind every shot has no contrast. Do not generate the example's place. Green hills and wildflowers are already used.
 
 **Logo.** The file is one flattened picture, not layers, and not a texture to stamp around.
 
@@ -124,11 +128,13 @@ UI language and content language are separate settings. A translated shell with 
 
 One component per shot, one composition per shot, plus the full film per locale.
 
-The grammar, borrowed from the reference and applied everywhere:
+The grammar, borrowed from the reference and applied everywhere. If the reference's contact sheet shows a zoom, this film has a zoom. If it shows a cursor, this film has a cursor. A product shot that stays at scale 1 did not use the reference.
 
-- The headline plays alone, is read, then leaves. The window rises in after it.
-- The camera moves to one thing at a time: the button, the toast, the reason, the result. Zoom in to read, never to decorate.
-- The cursor arrives on the beat, presses, and moves on. Its tip is measured onto the control, not guessed.
+- On a 1920×1080 stage the window at rest is 1620×930, placed near (150, 96). A side gap wider than about 200px means the window is too small. Enlarge it before animating anything. The surface being demonstrated fills that window. A phone or card floating in empty padding is the same failure, one level down.
+- The headline plays alone, is read, and has left before the window lands.
+- The window rises in from below. Hold scale 1 for about 60–75 frames so the whole window reads, then move.
+- Each product shot has at least two keyframes at scale 1.6 or more. The sentence the viewer must read reaches scale 1.9 or more. Zoom to read, never to decorate. While zoomed, the photograph is mostly out of frame.
+- The cursor glyph is about 44×50px. It arrives on the beat, its tip measured onto the control, presses, and moves on.
 - Shot lengths are multiples of one beat. Camera moves ease; only single elements spring.
 
 Mount every state you will show and switch with `visibility`, so measurements stay stable. Share timing arrays between the scene and the sound cues so a reveal and its pop cannot drift apart.
@@ -139,15 +145,19 @@ Synthesize a bed exactly as long as the film plus a few UI effects (click, tick,
 
 ### 7. Review loop
 
-Typecheck, then a half-scale draft. Read contact sheets for empty time and late text. Then full-frame grabs of every click, every zoom, every locale. Half-scale hides a cursor that misses by 20px.
+Do not show the user a film you have not rejected on a contact sheet. A weak film that shipped looked like this: the copy followed the chat's language, the window was a small card in the middle of the photograph, the camera never zoomed, there was no cursor, and the same photograph sat behind the hook, the product, and the logo. The sheet is how you see that before the user does.
 
-Fix at the source: wrong data at the capture, wrong position at the measurement, text overflow at the headline sizing. Re-render one shot, not the film.
+1. Typecheck. Render the whole film at half scale.
+2. Make a contact sheet at 1 frame per second. The commands are in [reference.md](reference.md).
+3. Walk the sheet against the reject list in that file. Any hit is a repair, then a new sheet of that shot. Do not continue to delivery.
+4. Full-frame stills of every click and every deepest zoom. Half scale hides a cursor that misses by 20px and a window that is still too small. Fix the measurement or the window size, and re-render that shot.
+5. Only then render the full-size delivery.
 
 When the user says a shot looks like the reference, delete those graphics and keep the length. When they say something feels odd, remove before adding. Do not fill space with the logo; a shot can be type alone.
 
 ### 8. Delivery and report
 
-Full size, h264 and AAC, every captured locale. `ffprobe` the files, check the bed is audible, confirm the folder and mp4s are ignored.
+Full size, h264 and AAC, English unless the user named another locale. `ffprobe` the files, check the bed is audible, confirm the folder and mp4s are ignored.
 
 Tell the user, plainly: which parts are real product output, which are rebuilt shell, which are invented surfaces. Which assets were generated. Which font and machine the Japanese depends on. What you did not check (usually: you did not listen to the sound against the picture). How to re-render.
 
@@ -161,11 +171,20 @@ The announcement post is not the film's script. Write it plainly: "I made X!!", 
 
 - [ ] Argument, beat map, and shot sentences were written before any scene
 - [ ] Every product number and sentence on screen came from a capture
-- [ ] The hero frames are the real component, not a drawing of the reference
+- [ ] The hero frames are the real component, not a screenshot pasted into the window
+- [ ] The product window is about 1620×930, and the photograph is only the margin around it
+- [ ] Hook, logo, principles, and end card are flat fields
+- [ ] The default cut is English, unless a Japanese cut was requested
+- [ ] A full-size still was rejected and re-rendered before the delivery
 - [ ] Nothing was traced from the reference; backdrop and score are new
 - [ ] The logo assembles once and appears assembled once on the end card
+- [ ] The only language is English, unless the user named another
+- [ ] At rest the window is about 1620×930 and the demonstrated UI fills it
+- [ ] Every product shot reaches scale 1.6, and a line to be read reaches 1.9
+- [ ] The photograph sits behind product windows only
+- [ ] The contact sheet was rejected and repaired until the list passed
 - [ ] The cursor tip sits on what it clicks, zoomed in as well
-- [ ] Zoomed text is inside the frame in every locale
+- [ ] Zoomed text is inside the frame
 - [ ] No shot is empty for more than about half a second
 - [ ] The ending fades out, and the audio fades with it
 - [ ] The report separates real, rebuilt, invented, and unchecked
