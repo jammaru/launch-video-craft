@@ -8,23 +8,19 @@
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg" /></a>
 </p>
 
-<h2 align="center">これは何？</h2>
+## これは何？
 
 自分でプロダクトを作ったら、ローンチのときに短いローンチ動画を作ることが多いと思います。一方で、SNS でよく見かけるおしゃれなローンチ動画を、ちゃんと作るのは難しい。
 
 エージェントに「いい感じに作って」とだけ頼んでも、期待どおりの映像にはなりにくいです。実際の UI を使わず、勝手にそれっぽい画面を描いてしまう——そういうズレをなくす手順と判断の基準を [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md) にまとめています。参考クリップのテンポに合わせ、**本物の製品画面**を Remotion で映すところまでです。
 
-<h2 align="center">このスキルで作った動画の例</h2>
-
-<div align="center">
+## このスキルで作った動画の例
 
 | EmDash Preflight | ChatGPT |
 | :---: | :---: |
 | [![EmDash Preflight](assets/samples/emdash-preflight.webp)](https://x.com/jammaru_lab/status/2105501576437678510?s=20) | [![ChatGPT](assets/samples/chatgpt.webp)](https://x.com/jammaru_lab/status/2108406681839554662?s=20) |
 
-</div>
-
-<h2 align="center">インストール</h2>
+## インストール
 
 ### 1. `npx skills add`（推奨）
 
@@ -60,7 +56,7 @@ gh skill update launch-video-craft
 /plugin install launch-video-craft@launch-video-craft
 ```
 
-<h2 align="center">使い方</h2>
+## 使い方
 
 参考動画とロゴを添え、Remotion で作ることと、`launch-video-craft` に従うことを書きます。参考動画はテンポや見せ方の参考にし、シーンの数や順番をそろえる必要はありません。
 
@@ -72,7 +68,7 @@ gh skill update launch-video-craft
 〇〇を伝えたい。ロゴのあと Playground で△△を見せ、最後にインストール。
 ```
 
-<h2 align="center">リポジトリ構成</h2>
+## リポジトリ構成
 
 ```text
 .
@@ -82,8 +78,6 @@ gh skill update launch-video-craft
 └── scripts/check.py              # 公開前の静的チェック
 ```
 
-<h2 align="center">ライセンス</h2>
+## ライセンス
 
-<p align="center">
-  <a href="LICENSE">MIT</a> — Copyright (c) 2026 <a href="https://github.com/jammaru">jammaru</a>
-</p>
+[MIT](LICENSE) — Copyright (c) 2026 [jammaru](https://github.com/jammaru)
