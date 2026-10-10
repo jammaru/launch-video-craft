@@ -1,4 +1,6 @@
-<img src="assets/logo.png" alt="Launch Video Craft" width="220">
+<p align="center">
+  <img src="assets/logo.png" alt="Launch Video Craft" width="220">
+</p>
 
 # Launch Video Craft
 
