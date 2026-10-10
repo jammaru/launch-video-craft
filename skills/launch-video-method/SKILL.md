@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.7.0"
+  version: "0.7.1"
 ---
 
 # Launch videos in Remotion
@@ -159,9 +159,10 @@ The photograph is the world behind the product windows only. The hook, every hea
 
 - Decide the parts by looking: the mark versus the words, and inside the mark only pieces that are already their own shape (a frame, a bar, a badge).
 - Measure from pixels: dark-pixel counts per row and column give the bands. Overlay a grid on the mark to read its geometry.
-- Cut with masks into transparent layers. Check each layer on a strong color, not on white; white hides fringes.
+- Cut with masks into transparent layers, each on the full canvas of the original file. Check each layer on a strong color, not on white; white hides fringes. A cut runs through empty space between parts: if the mark's layer contains a letter of the words, the cut is in the wrong place.
+- Draw the layers with the kit's `LogoLayers`: one box, `objectFit: contain`, motion by `transform` only. A layer given its own width and height is squashed; compare a still of the assembled logo with the original file side by side.
 - Words share one origin and one scale so they keep one baseline. Store the offset as a constant.
-- Animate the parts in the name shot. The end card shows it assembled. No other shot carries the logo.
+- Animate the parts in the name shot. The end card shows it assembled. No other shot carries the logo. A lockup that contains the name is the name: do not set the name again in type under it.
 
 **Type.** Three roles: display for headlines, the product's UI face for the shell, mono for code and JSON. Latin from a webfont with an explicit small subset. Japanese from a system face on the machine; full CJK webfonts stall the render.
 
@@ -259,7 +260,7 @@ The announcement post is not the film's script. Write it plainly: "I made X!!", 
 - [ ] With no UI: terminal and tool-card text is captured output; the person types only what a person types, and the agent's steps have no cursor
 - [ ] A line to be read reaches scale 1.9, and zoomed text is inside the frame
 - [ ] Nothing was traced from the reference; backdrop and score are new
-- [ ] The logo assembles once and appears assembled once on the end card
+- [ ] The logo assembles once and appears assembled once on the end card, in its original proportions
 - [ ] Full-size stills and the contact sheet were rejected and repaired before the delivery render
 - [ ] No shot is empty for more than about half a second
 - [ ] The ending fades out, and the audio fades with it

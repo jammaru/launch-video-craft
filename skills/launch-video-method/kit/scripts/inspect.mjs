@@ -3,8 +3,8 @@
 // not load, a cut that lands on black, a shot where nothing moves.
 // - review/film/<shot>-<label>.png at the start, a quarter, half, three quarters, and end of
 //   every shot, and review/film-sheet.png with one row per shot
-// - fails on black over 0.5s before the final fade, the same picture for over 4s, and missing
-//   or silent audio
+// - fails on black or any flat colour over 0.5s before the final fade, the same picture for
+//   over 4s, and missing or silent audio
 // Then open the sheet and write what each row shows under "Film checked" in NOTES.md;
 // `npm run finish` checks that before the film is handed over.
 import { execFileSync, spawnSync } from "node:child_process";
@@ -64,6 +64,9 @@ const shotAt = (t) => shots.find((s) => t * fps >= s.start && t * fps < s.start 
 for (const m of detect("blackdetect=d=0.5:pix_th=0.10").matchAll(/black_start:([\d.]+) black_end:([\d.]+)/g)) {
   const [from, to] = [Number(m[1]), Number(m[2])];
   if (from < seconds - 1.2) failures.push(`black from ${from.toFixed(2)}s to ${to.toFixed(2)}s (${shotAt(from)})`);
+}
+for (const run of JSON.parse(execFileSync("python3", [join(here, "scripts/blank.py"), film], { encoding: "utf8" }))) {
+  failures.push(`nothing on screen from ${run.from}s to ${run.to}s (${shotAt(run.from)}): a flat frame, often type the same colour as its field`);
 }
 const freezes = detect("freezedetect=n=0.002:d=4");
 for (const m of freezes.matchAll(/freeze_start: ([\d.]+)[\s\S]*?freeze_duration: ([\d.]+)/g)) {

@@ -8,6 +8,8 @@ Pixels that differ from it are something drawn there (type, a logo). Two failure
   sits on a photograph or texture. Headlines, title cards, and end cards sit on a plain field.
 - faint: a visible mark whose strongest pixels reach under 3:1 against the background,
   like a dark logo on a dark card.
+- blank: almost nothing differs from the frame's median colour, so nothing can be read,
+  like white type on a white field.
 """
 
 import json
@@ -45,6 +47,9 @@ def check(path: str) -> dict:
     lum = luminance(load(path))
     h, w = lum.shape
     problems = []
+    drawn = float((ratio(lum, float(np.median(lum))) >= 1.06).mean())
+    if drawn < 0.002:
+        return {"file": path, "ok": False, "problems": [f"blank: only {drawn * 100:.2f}% of the frame differs from its field; the type may be the same colour as its field"]}
     busy, faint = [], []
     for row in range(ROWS):
         for col in range(COLS):

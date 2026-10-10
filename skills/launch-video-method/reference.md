@@ -416,7 +416,7 @@ format=rgba,geq=r='0':g='0':b='0':a='clip((250-g(X,Y))*1.07,0,255)*MASK',crop=W:
 
 Composite all layers on a strong color and look. Fringes or missing strokes show there, not on white.
 
-Word crops share one vertical origin and one scale. Store the horizontal offset between them as a constant.
+Word crops share one vertical origin and one scale. Store the horizontal offset between them as a constant. Simplest: keep every layer on the full canvas and draw them all with `LogoLayers` (kit/src/components/Logo.tsx), so there is no offset to store.
 
 Animate: frame scales 0.6 → 1 with a spring, bar wipes with `clip-path: inset(0 X% 0 0)`, badge springs from 0 and rotates from about -120° around its own center (`transform-origin` at the badge center inside the crop). Words rise into an overflow-hidden line, the second about 6 frames after the first.
 
@@ -466,6 +466,11 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | A part appears after a click on a palette, in a product that uses drag | Drag it: cursor down on the palette item, the item follows the cursor, drops, lands. |
 | The user asked for an order or a scene that is not in the film | Rebuild the shot list from the user's request. The default shape only fills gaps. |
 | The film is padded to match the reference's length, or a needed proof was cut to match it | Recut to the shots this product needs. The reference gives the shape, not the length. |
+| A logo part is narrower or taller than in the original file | The layer was given its own width and height. Draw every layer in one box with `LogoLayers`; animate with `transform`. |
+| The lockup is followed by the name in type, or the name appears three times in a row | The lockup is the name. Remove the typed copy. |
+| A zoomed frame slices a line of text along its top or bottom edge | Move the camera so the frame's edges fall in the gaps between rows, or include the line whole. A half line at the edge reads as a mistake. |
+| The demonstrated surface fills only the top half of the window | Make it fill the window (larger type in the surface, more rows, or a shorter window body); the empty half is what the viewer sees at scale 1. |
+| A shot is a flat field with nothing on it (`blank` in verify, `nothing on screen` in inspect) | The type is the same colour as its field, or the scene did not mount. A light `tone` on `Headline` gets an ink field. |
 | The backdrop has letters, a sign, a logo, or a screen in it | Generate it again from a prompt that names only a place and the light: no product name, no "launch", "video", "app", "AI". |
 | A blank or half-built frame was noted in review and the delivery was rendered anyway | Fix it first. A noted problem that ships is a failed review. |
 | Terminal or tool-card text is typed into a scene | Capture it from the real command and read the JSON. |

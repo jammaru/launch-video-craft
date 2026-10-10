@@ -196,13 +196,21 @@ export function Cursor({ keys, presses = [], from = 0 }: { keys: CursorKey[]; pr
  * The headline sits on its own plain field, never on the photograph: type over a photo
  * loses contrast wherever the picture is dark or busy. The field fades as the headline leaves.
  */
+/** Paper behind dark type, ink behind light type, so a headline never matches its field. */
+function fieldFor(tone: string) {
+  const hex = tone.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return color.paper;
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 140 ? color.ink : color.paper;
+}
+
 export function Headline({
   text,
   start,
   out,
   size = 116,
   tone = color.ink,
-  field = color.paper,
+  field = fieldFor(tone),
 }: {
   text: string;
   start: number;

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1 - 2026-10-11
+
+Found by inspecting a film made with 0.7.0 by another model, which passed every check:
+
+- `Headline` picks its field from its tone (ink behind light type), so white principles no longer vanish on a paper field. The kit had introduced that.
+- Blank frames fail: `contrast.py` rejects a still where almost nothing differs from the field, and `inspect` rejects any flat-colour stretch over 0.5s, not only black.
+- `LogoLayers` draws logo layers cut on one canvas in one box with `objectFit: contain`; a layer given its own width and height was squashed. A cut through a letter is the wrong cut. A lockup is not followed by the name in type.
+- New rejects: a zoom that slices a line of text at the frame edge, a surface that fills only the top half of the window.
+
 ## 0.7.0 - 2026-10-10
 
 - The reference is a guide to the film's shape, not a template. Research writes what the reference is, its scenes as roles, and how this product fills each role (or drops it), and adds the roles this product needs. The product's nature decides the film.
