@@ -26,18 +26,6 @@
 | :---: | :---: |
 | [![EmDash Preflight](assets/samples/emdash-preflight.webp)](https://x.com/jammaru_lab/status/2105501576437678510?s=20) | [![ChatGPT](assets/samples/chatgpt.webp)](https://x.com/jammaru_lab/status/2108406681839554662?s=20) |
 
-## `launch-video-method` からの移行（0.9.0）
-
-リポジトリ名・Skill 名・プラグイン名を **Launch Video Craft**（`launch-video-craft`）に統一しました。
-
-| 以前 | いま |
-| --- | --- |
-| `jammaru/launch-video-skills` | `jammaru/launch-video-craft` |
-| Skill `launch-video-method` | Skill `launch-video-craft` |
-| `npx skills update launch-video-method` | `npx skills update launch-video-craft` |
-
-古い Skill を入れている場合は、新しいリポジトリを追加してから古いディレクトリ（`.agents/skills/launch-video-method` など）を削除してください。プロンプトも `launch-video-craft に従って` に書き換えます。手順と検査の内容は同じです。
-
 ## インストール
 
 ### 1. `npx skills add`（推奨）
