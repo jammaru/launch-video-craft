@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 - 2026-10-10
+
+- Each product shot has a beat sheet (`beats.ts`) that the scene, camera, cursor, and sound import. `assertBeats` fails the render when a headline is cut short, the window rises under it, a press happens before the window settles or at scale 1, presses come less than 30 frames apart, or the headline's action is far from the headline.
+- Each headline names the first action the viewer sees, within 90 frames of its exit.
+- The user's named order, payoff, length, and language outrank the default shape. The opening follows the reference.
+- Length and shot count follow the reference, not the example film.
+- The product's own gesture is shown: drag is dragged.
+- Review adds a 4 fps sync strip per shot, and a noted problem is fixed before the delivery render.
+- Film work stays out of git: `.git/info/exclude`, no `.gitignore` edit, no commit, push, or pull request unless asked. This repository ignores `video/` and `.product/`.
+
 ## 0.3.0 - 2026-10-10
 
 - A full-size still of the landed window has to pass before the film is rendered.

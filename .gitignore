@@ -2,3 +2,5 @@
 *.log
 assets/samples/*.mp4
 !assets/samples/*-preview.mp4
+video/
+.product/

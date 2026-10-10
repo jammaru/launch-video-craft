@@ -5,7 +5,7 @@ Reusable pieces for the phases in [SKILL.md](SKILL.md). None are tied to one pro
 ## Project
 
 ```
-video/<name>/                 # gitignored, own package.json, npm install
+video/<name>/                 # own package.json, npm install; kept out of git
   capture/                    # runs the product, writes JSON
   scripts/sync-assets.mjs     # copy shipped CSS, split the logo
   scripts/make-audio.py       # placeholder bed and effects
@@ -17,13 +17,19 @@ video/<name>/                 # gitignored, own package.json, npm install
   src/lib/motion.ts           # tween, track, pop, appear
   src/lib/anchors.ts          # DOM measurement
   src/components/             # Stage (backdrop, camera, window, cursor, headline), shell, logo
+  src/scenes/<Shot>.beats.ts  # the shot's frame numbers, checked by assertBeats
   src/scenes/                 # one file per shot, exports its duration
   src/Video.tsx  src/Root.tsx
-video/<name>.mp4              # gitignored delivery
+video/<name>.mp4              # delivery, never committed
 video/<name>-<locale>.mp4
 ```
 
-Ignore `video/<name>/` and `video/*.mp4`. Do not add Remotion to the product.
+Keep the film out of git without a diff: if `git check-ignore -q video/x` fails, append `video/` and `.product/` to `.git/info/exclude`. Do not edit `.gitignore`, commit, push, or open a pull request unless asked. Do not add Remotion to the product.
+
+```bash
+git check-ignore -q video/x || printf 'video/\n.product/\n' >> .git/info/exclude
+git status --short   # must show nothing from the film
+```
 
 ```bash
 npx tsc --noEmit
@@ -96,6 +102,107 @@ Rebuild the shell from screenshots with the design system's CSS variables, the p
 
 A portal positions against the browser viewport, so it cannot follow a camera. Read the dialog's title, body, and button labels from the capture. Render them in normal flow with the design system's button and surface, using the popup's classes from the package source minus `fixed` centering. A dimmer layer behind it at about 0.8 opacity. Same for toasts: the captured message, design-system colors, your own placement.
 
+## Beat sheet
+
+Text and picture drift apart when each layer keeps its own frame numbers: the headline exits at one number, the window springs in at another, the cursor and camera have their own lists, and nobody checks that the press is visible while the viewer still remembers the headline. One file per shot fixes that. Every other file imports from it.
+
+```ts
+// src/scenes/PublishBlocked.beats.ts
+import { assertBeats } from "../lib/beats";
+
+export const beats = assertBeats("PublishBlocked", {
+  duration: 330,
+  headline: { in: 2, out: 36, words: 6 },
+  window: { in: 40, landed: 70 },
+  actions: [
+    { name: "publish", camera: 112, cursor: 110, press: 118, result: 126, resultCamera: 168, holdUntil: 214, scale: 2.1 },
+  ],
+});
+```
+
+```ts
+// src/lib/beats.ts
+export type Action = {
+  name: string;
+  camera: number;       // camera keyframe that lands on the control
+  cursor: number;       // cursor keyframe that lands on the control
+  press?: number;       // omit for a read-only beat
+  result: number;       // the thing the press changed is visible
+  resultCamera: number; // camera keyframe that lands on the result
+  holdUntil: number;    // camera leaves the result after this
+  scale: number;        // camera scale at the press
+};
+export type Beats = {
+  duration: number;
+  headline?: { in: number; out: number; words: number };
+  window?: { in: number; landed: number };
+  actions: Action[];
+};
+
+export function assertBeats(id: string, b: Beats): Beats {
+  const errors: string[] = [];
+  const fail = (message: string) => errors.push(message);
+  const { headline: h, window: w } = b;
+  if (h) {
+    const need = Math.max(30, 3 * (h.words - 1) + 16);
+    if (h.out - h.in < need) fail(`headline is up ${h.out - h.in} frames; needs ${need}`);
+  }
+  if (h && w && w.in < h.out) fail(`window rises at ${w.in}, while the headline is read until ${h.out}`);
+  if (w && w.landed - w.in > 36) fail(`window takes ${w.landed - w.in} frames to land; use a stiffer spring`);
+  const first = b.actions[0];
+  if (h && first && first.result - h.out > 90 + 12) fail(`first result at ${first.result} is too far from the headline (${h.out})`);
+  let lastPress = -Infinity;
+  for (const a of b.actions) {
+    const at = a.press ?? a.result;
+    if (w && at < w.landed + 20) fail(`${a.name}: at ${at}, the window has not settled (${w.landed})`);
+    if (a.press !== undefined) {
+      if (a.scale < 1.4) fail(`${a.name}: press at scale ${a.scale}; zoom to 1.4 or more first`);
+      if (a.press - a.camera < 2) fail(`${a.name}: camera arrives at ${a.camera}, after or on the press ${a.press}`);
+      if (a.press - a.cursor < 4) fail(`${a.name}: cursor arrives at ${a.cursor}, too close to the press ${a.press}`);
+      if (a.result - a.press > 12) fail(`${a.name}: result ${a.result - a.press} frames after the press`);
+      if (a.press - lastPress < 30) fail(`${a.name}: press ${a.press - lastPress} frames after the previous one`);
+      lastPress = a.press;
+    }
+    if (a.resultCamera - a.result > 50) fail(`${a.name}: camera reaches the result ${a.resultCamera - a.result} frames late`);
+    if (a.holdUntil - a.resultCamera < 25) fail(`${a.name}: result held ${a.holdUntil - a.resultCamera} frames`);
+    if (a.holdUntil > b.duration) fail(`${a.name}: hold runs past the shot`);
+  }
+  if (errors.length) throw new Error(`${id} beats:\n- ${errors.join("\n- ")}`);
+  return b;
+}
+```
+
+The scene builds its camera keyframes, cursor keyframes, `Headline start/end`, `pop(frame, fps, beats.window.in, 16, 0.9)`, and sound cues from `beats`. A number typed in a scene that is not in the beat sheet is how the two drift.
+
+Write the sheet in words first, one row per action, and say what the headline promised:
+
+| Frame | Picture | Text on screen |
+| --- | --- | --- |
+| 2–36 | Quiet field | "Bad publishes stop before they go live." |
+| 40–70 | Window rises and lands | (none) |
+| 72→112 | Camera travels to Publish, scale 2.1 | (none) |
+| 118 | Press Publish | (none) |
+| 126 | Toast: Failed to publish | the captured message |
+| 168–214 | Camera on the toast, scale 2.2 | the captured message |
+
+If the row the headline describes is not among the first three after the window lands, rewrite the headline or reorder the shot.
+
+### How a test film drifted
+
+A later film written from an earlier version of this skill had these numbers in its build shot. Read them as the shape to avoid.
+
+| | That film | The example film |
+| --- | --- | --- |
+| Headline on screen | 0→28, 4 words | 2→36, 6 words |
+| Window starts rising | 8, under the headline | 40, as the headline leaves |
+| Window spring | stiffness 70, still drifting at 60 | stiffness 170, landed at ~70 |
+| First press | 52, camera at scale 1 | 118, camera at 2.1 since 112 |
+| Presses | 5, 16 frames apart | 1 (2 in the control shot, 38 apart) |
+| Camera first zooms | 130, after every press | 72→112, before the press |
+| Headline's action visible | "A tap with nowhere to go." then the tap at 178 | "Bad publishes stop" then the stop at 126 |
+
+The viewer read a headline, watched an unrelated window drift in, saw small clicks at full width, then a zoom onto results they had not seen caused. That is what "the text and the screen are out of sync" means.
+
 ## Stage components
 
 **Backdrop.** `objectFit: cover`, scale about 1.06 with a slow sine breath, and a translate of about 0.08px per frame. Movement you barely notice keeps a still from looking frozen.
@@ -112,17 +219,18 @@ transform: translate(960px, 540px) scale(s) translate(-x px, -y px)
 Keyframes are `{ at, x, y, scale }`, interpolated per segment with an ease-in-out bezier. Copy this shape into every product shot, with new coordinates:
 
 ```
-{ at: 0, scale: 1 }          // hold until about frame 70
-{ at: ~110, scale: 2.1 }     // the control
-{ at: ~170, scale: 2.2 }     // the result
-{ at: ~250, scale: 1.95 }    // the sentence
+{ at: 0, scale: 1 }          // headline 2→36, window 40→~70
+{ at: 72, scale: 1 }         // the landed window has been read
+{ at: 112, scale: 2.1 }      // on the control; press at 118
+{ at: 168, scale: 2.2 }      // on the result (appeared at 126); hold to 214
+{ at: 250, scale: 1.95 }     // the sentence
 ```
 
 Scale 1 is the establishing view only. A region is 1.4–1.6. A line the viewer must read is 1.9–2.2. Hold each read for 25–45 frames. A product shot whose maximum scale is 1 is unfinished.
 
 **Cursor.** A child of the camera, in stage coordinates. The glyph is about 44×50px, black with a white stroke, tip at the keyframe. Keyframes `{ at, x, y }`. On a click frame: scale dips about 18% over 10 frames, and a ring expands and fades over about 18 frames. Hide it until it is needed. A product shot with no cursor did not borrow the reference.
 
-**Headline.** Reveal word by word, about 3 frames apart, each word rising from below its line over 16 frames. Exit upward with a fade about 14 frames, finished before the window lands. Shrink to fit about 1720px.
+**Headline.** Reveal word by word, about 3 frames apart, each word rising from below its line over 16 frames. Exit upward with a fade about 14 frames. The window's spring starts at the exit frame, not earlier. Shrink to fit about 1720px.
 
 ## Click targets
 
@@ -209,6 +317,8 @@ Regenerate the bed when any duration changes.
 npx remotion render src/index.ts <Film> /tmp/draft.mp4 --scale=0.5 --log=error
 ffmpeg -i /tmp/draft.mp4 -vf "fps=1,scale=480:-1,tile=4x4" sheet_%02d.png
 ffmpeg -ss <seconds> -i /tmp/full.mp4 -frames:v 1 click.jpg
+# sync strip for one shot: headline exit to first result, 4 fps
+ffmpeg -ss <shotStart+headlineOut/30> -t 4 -i /tmp/draft.mp4 -vf "fps=4,scale=480:-1,tile=4x4" -frames:v 1 sync.png
 ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate:format=duration out.mp4
 ffmpeg -i out.mp4 -af volumedetect -vn -f null -
 ```
@@ -228,6 +338,14 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | The backdrop is green hills and wildflowers | Generate a different place. That one is the example's. |
 | The last row of the sheet is empty black for more than about a second | The fade is the last ~15 frames of the end card, not a dead tail. |
 | A full-frame click still shows the cursor missing the control by more than a few pixels | Fix the measurement. Ancestor transforms must be divided out. Re-render that shot. |
+| A headline describes something that appears seconds later | Rewrite the headline to name the first action, or move that action to within 90 frames of the headline's exit. |
+| The window is rising while the headline is still on screen | Start the window spring at the headline's exit frame. |
+| A press happens at scale 1, or while the window is still moving | Put the camera on the control first (scale 1.4+, 1.8+ for a small control), then the cursor, then the press. Zoom to the result afterwards. |
+| Several presses within a second | Keep presses 30+ frames apart. Show one slowly; let repeats go by in one move. |
+| A part appears after a click on a palette, in a product that uses drag | Drag it: cursor down on the palette item, the item follows the cursor, drops, lands. |
+| The user asked for an order or a scene that is not in the film | Rebuild the shot list from the user's request. The default shape only fills gaps. |
+| The film's length equals the example's while the reference is a different length | Recut to the reference's length and shot count. |
+| A blank or half-built frame was noted in review and the delivery was rendered anyway | Fix it first. A noted problem that ships is a failed review. |
 | Zoomed type is cut off | Frame the sentence, not the middle of a full-width banner. Shrink Japanese lines if that locale was requested. |
 
 A bed around −20 dB mean, peak under 0 dB. The sheet cannot tell you a sound is late. Say so if you did not listen.
@@ -238,4 +356,4 @@ Plain launch voice: what you made, what it does for the reader, the link. Not th
 
 ## Timing
 
-30fps, 120 BPM, one beat = 15 frames. Shot lengths are multiples of 15. Typical lengths: hook 120, name 105, product shots 300–330, principles 150 (one line per 30 frames), end card 150.
+30fps, 120 BPM, one beat = 15 frames. Shot lengths are multiples of 15. The example's lengths were hook 120, name 105, product shots 300–330, principles 150 (one line per 30 frames), end card 150, for a 49.5-second film. Scale them to the reference's total; do not copy the total.

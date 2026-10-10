@@ -27,7 +27,7 @@ Those belong to this product. Write new ones from the product in front of you.
 
 ## The film
 
-30fps, 120 BPM, 15 frames a beat. The project lived in the product repository at `video/launch/`, gitignored, installed with its own npm so Remotion never entered the product lockfile. Deliveries were `video/preflight-launch.mp4` and `video/preflight-launch-ja.mp4`, also gitignored.
+30fps, 120 BPM, 15 frames a beat. The project lived in the product repository at `video/launch/`, installed with its own npm so Remotion never entered the product lockfile. Deliveries were `video/preflight-launch.mp4` and `video/preflight-launch-ja.mp4`. None of it was committed.
 
 Tools, and what each one did:
 
@@ -49,9 +49,19 @@ Tools, and what each one did:
 | Principles | 150 | Four constraints, one line at a time, type only. |
 | EndCard | 150 | Logo, where to get it, package name, fade to black. |
 
-1485 frames, 49.5 seconds. The bed is generated to that length. Change a duration and regenerate the bed.
+1485 frames, 49.5 seconds. The bed is generated to that length. Change a duration and regenerate the bed. These lengths fit that reference; they are not the default for another film.
 
-Picture scale. The admin window is `{ x: 150, y: 96, w: 1620, h: 930 }`. Product shots hold scale 1 for about two seconds, then zoom. The proof shot reaches 2.1 on the publish control and 2.2 on the toast. The cursor glyph is 44×50. The photograph is behind those product shots only. The hook, the logo, and the end card are on white. Principles is one line at a time on black. The end card fades to black over its last 14 frames. A later film that left a small window on the photograph for the whole running time, with no zoom and no cursor, had not followed this.
+Beats in the product shots, scene-local frames, read from the scene source. Headlines exit over 14 frames from the out frame. Windows enter with `pop(frame, fps, in, 16, 0.9)` (stiffness 170) and land about 30 frames later.
+
+| Shot | Headline | Window in | Camera at scale 1 until | First beat | Presses | Result held |
+| --- | --- | --- | --- | --- | --- | --- |
+| PublishBlocked | 2→36 | 40 | 72 | camera on Publish 112 (2.1), cursor 110 | 118 | toast at 126; camera on it 168→214 (2.2) |
+| AgentCheck | 2→34, subtitle 10→34 | 36 | 60 | camera on composer 94 (1.45), cursor on Send 92 | Send 96 | first message at 100; blocked gate 168→196 (1.75) |
+| Dashboard | 2→38 | 40 | 76 | camera on the observe banner 108 (1.7) | Enable 190, Confirm 228 | mode swap at 234; banner 262→300 (1.75–1.92) |
+
+Each headline is what the next three seconds show: "Bad publishes stop before they go live." then a publish stops; "Agents check first." then an agent's message and a check; "Observe first. Enforce when ready." then the observe banner, then enforce.
+
+Picture scale. The admin window is `{ x: 150, y: 96, w: 1620, h: 930 }`. In each product shot the camera stays at scale 1 while the headline plays and the window lands (about frames 0–72), then zooms. The proof shot reaches 2.1 on the publish control and 2.2 on the toast. The cursor glyph is 44×50. The photograph is behind those product shots only. The hook, the logo, and the end card are on white. Principles is one line at a time on black. The end card fades to black over its last 14 frames. A later film that left a small window on the photograph for the whole running time, with no zoom and no cursor, had not followed this.
 
 The argument, one sentence: the same deterministic rules check a publish no matter who starts it, and they can stop it.
 

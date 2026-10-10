@@ -66,7 +66,7 @@ gh skill update launch-video-method
 
 ```text
 このプロダクトのローンチ動画を作って。参考動画はこれ。ロゴはこのファイル。
-Remotion で。動画プロジェクトは gitignore。
+Remotion で。
 launch-video-method に従って。
 ```
 
