@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.2.2"
+  version: "0.3.0"
 ---
 
 # Launch videos in Remotion
@@ -106,7 +106,7 @@ UI language and content language are separate settings. A translated shell with 
 - Rebuilt shell: window chrome, navigation, editor fields around that surface. Match screenshots, use the design system's tokens, the product's icon set, and real translated labels.
 - A surface the product lacks: generic and quiet, so attention stays on the captured text inside it.
 
-**Prove the renderer first.** One still of captured data through the real component and the shipped compiled CSS. If it is unstyled, the stylesheet or theme attributes are wrong. No scene until this still is right.
+**Prove the renderer first.** One still of captured data through the real component and the shipped compiled CSS. If it is unstyled, the stylesheet or theme attributes are wrong. No scene until this still is right. If the component will not import, fix the import. Copying `docs/*.png` into an `<Img>` is a failed proof: the zoom goes soft, and nothing on it can be measured or clicked. Do not continue the film on screenshots.
 
 **Portals do not render in frames.** A dialog or toast that portals to `document.body` with `fixed` positioning will not sit in a zoomed window. Read its copy from the capture and draw it in normal flow with the same components and classes.
 
@@ -134,7 +134,7 @@ The grammar, borrowed from the reference and applied everywhere. If the referenc
 - The headline plays alone, is read, and has left before the window lands.
 - The window rises in from below. Hold scale 1 for about 60–75 frames so the whole window reads, then move.
 - Each product shot has at least two keyframes at scale 1.6 or more. The sentence the viewer must read reaches scale 1.9 or more. Zoom to read, never to decorate. While zoomed, the photograph is mostly out of frame.
-- The cursor glyph is about 44×50px. It arrives on the beat, its tip measured onto the control, presses, and moves on.
+- The cursor glyph is about 44×50px, and it is a child of the camera so a zoom carries it. It arrives on the beat, presses, and moves on. Its tip comes from measuring the control after fonts load. A scene file with hand-written `{ x, y }` did not measure anything.
 - Shot lengths are multiples of one beat. Camera moves ease; only single elements spring.
 
 Mount every state you will show and switch with `visibility`, so measurements stay stable. Share timing arrays between the scene and the sound cues so a reveal and its pop cannot drift apart.
@@ -147,11 +147,16 @@ Synthesize a bed exactly as long as the film plus a few UI effects (click, tick,
 
 Do not show the user a film you have not rejected on a contact sheet. A weak film that shipped looked like this: the copy followed the chat's language, the window was a small card in the middle of the photograph, the camera never zoomed, there was no cursor, and the same photograph sat behind the hook, the product, and the logo. The sheet is how you see that before the user does.
 
-1. Typecheck. Render the whole film at half scale.
-2. Make a contact sheet at 1 frame per second. The commands are in [reference.md](reference.md).
-3. Walk the sheet against the reject list in that file. Any hit is a repair, then a new sheet of that shot. Do not continue to delivery.
-4. Full-frame stills of every click and every deepest zoom. Half scale hides a cursor that misses by 20px and a window that is still too small. Fix the measurement or the window size, and re-render that shot.
-5. Only then render the full-size delivery.
+1. Full-size still of the first product shot, at the frame where the window has landed and the camera is still at scale 1. Open that PNG before any full-film render.
+2. Reject the still, fix that scene, and render the still again while any of these are true. Do not start the film render during a reject.
+   - The window is under about 1500×800, or sky surrounds it.
+   - The surface inside it is a PNG. Put the component back.
+   - The cursor's coordinates are literals in the scene, or the cursor is not a child of the camera.
+   - The copy is Japanese and the user did not ask for Japanese.
+3. Full-size still of one zoomed click in that same shot. The control is sharp, because it is the component, and the cursor tip is on it. A soft zoom means the surface is still a bitmap.
+4. Only after those two stills pass: typecheck, render the whole film at half scale, and make a 1 fps contact sheet. The commands and the rest of the reject list are in [reference.md](reference.md).
+5. Any hit on the sheet is a repair of that shot, then a new sheet of that shot. A sheet made after the delivery file was copied out is not a review.
+6. Then render the full-size delivery.
 
 When the user says a shot looks like the reference, delete those graphics and keep the length. When they say something feels odd, remove before adding. Do not fill space with the logo; a shot can be type alone.
 

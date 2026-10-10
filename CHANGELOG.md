@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 - 2026-10-10
+
+- A full-size still of the landed window has to pass before the film is rendered.
+- A product surface that is a screenshot is a failed proof. Fix the component import.
+- The cursor is a child of the camera, and its coordinates come from measurement.
+
 ## 0.2.2 - 2026-10-10
 
 - Default language is English. Another language is rendered only when the user names it.

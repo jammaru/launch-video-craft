@@ -221,7 +221,8 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | The window is a small card with photograph on every side | Set the window to 1620×930 near (150, 96). Side gaps over about 200px fail. |
 | The thing being demonstrated is a small device inside an empty window | Make that surface fill the window. |
 | A product shot's frames all look alike | Add the scale pattern: hold 1, then 1.6 or more, and 1.9 or more on the sentence. |
-| No cursor on the click | Add the 44×50 glyph. Measure the tip onto the control. |
+| No cursor on the click | Add the 44×50 glyph as a child of the camera. Measure the tip onto the control after fonts load. Delete hand-written coordinates. |
+| The product surface is a PNG or a screenshot from `docs/` | The import failed and was abandoned. Fix the import and render the component. A bitmap cannot be clicked and goes soft when the camera zooms. |
 | The photograph is behind the hook, the logo, the principles, or the end card | Those shots are a plain field. Paper or ink. The photograph stays behind the product windows. |
 | Principles has shapes, repeated logos, or the photograph | Type on ink, one line at a time. Keep the duration. |
 | The backdrop is green hills and wildflowers | Generate a different place. That one is the example's. |
