@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode, Ref } from "react";
+import { createContext, useContext, type CSSProperties, type ReactNode, type Ref } from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 
 import { keyed, ramp, type Key } from "../lib/motion";
@@ -32,6 +32,9 @@ export function Backdrop() {
 
 export type CameraKey = Key<"x" | "y" | "scale">;
 
+/** The camera's scale at this frame, for children that should change when zoomed. */
+const CameraScale = createContext(1);
+
 export function Camera({ keys, children }: { keys: CameraKey[]; children: ReactNode }) {
   const frame = useCurrentFrame();
   const x = keyed(frame, keys, "x");
@@ -44,7 +47,7 @@ export function Camera({ keys, children }: { keys: CameraKey[]; children: ReactN
         transform: `translate(960px, 540px) scale(${scale}) translate(${-x}px, ${-y}px)`,
       }}
     >
-      {children}
+      <CameraScale.Provider value={scale}>{children}</CameraScale.Provider>
     </AbsoluteFill>
   );
 }
@@ -74,6 +77,7 @@ export function Window({
   bodyRef?: Ref<HTMLDivElement>;
   children: ReactNode;
 }) {
+  const zoom = useContext(CameraScale);
   return (
     <div
       style={{
@@ -107,6 +111,7 @@ export function Window({
         {["#ff5f57", "#febc2e", "#28c840"].map((dot) => (
           <div key={dot} style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: dot }} />
         ))}
+        {/* Gone while zoomed: wherever it sits, some zoom cuts it at the frame's edge. */}
         <div
           style={{
             position: "absolute",
@@ -114,6 +119,7 @@ export function Window({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            opacity: 1 - ramp(zoom, 1.1, 1.3),
             fontFamily: fonts.ui,
             fontSize: 14,
             fontWeight: 500,

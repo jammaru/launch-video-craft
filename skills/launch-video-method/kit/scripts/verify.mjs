@@ -120,7 +120,31 @@ const contrast = (files, extra = []) => {
 contrast(flat);
 contrast(exits, ["--busy-only"]);
 
-// 5. The backdrop photograph has no writing in it. Image models paint the words of their prompt
+// 5. Held frames end between rows, not through a line of type. The hold-end stills are rendered
+// again without the debug overlay, whose outlines would read as cut strokes.
+for (const [id, b] of Object.entries(sheets)) {
+  const composition = await selectComposition({ serveUrl, id: `Shot-${id}` });
+  const files = [];
+  for (const a of b.actions) {
+    for (const [label, frame] of [["result", a.resultCamera + 2], ["hold-end", a.holdUntil - 2]]) {
+      const output = join(reviewDir, id, `clean-${String(frame).padStart(4, "0")}-${a.name}-${label}.png`);
+      try {
+        await renderStill({ composition, serveUrl, frame, output, imageFormat: "png" });
+        files.push(output);
+      } catch {
+        // The framing error was already reported by the debug render of this shot.
+      }
+    }
+  }
+  if (!files.length) continue;
+  const out = execFileSync("python3", [join(here, "scripts/edges.py"), ...files], { encoding: "utf8" });
+  for (const line of out.trim().split("\n").filter(Boolean)) {
+    const result = JSON.parse(line);
+    if (!result.ok) failures.push(`${relative(here, result.file)}: ${result.problems.join("; ")}`);
+  }
+}
+
+// 6. The backdrop photograph has no writing in it. Image models paint the words of their prompt
 // (a product name, "launch") into skies and signs; tesseract finds them when it is installed.
 const backdrop = join(here, "public/backdrop.jpg");
 if (existsSync(backdrop)) {

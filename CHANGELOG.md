@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.4 - 2026-10-11
+
+- Verify renders every result and hold-end frame again without the debug overlay and fails when type is cut by an edge of the frame (`scripts/edges.py`). Measured on a film: every frame with a sliced line scored 0.9–46% of an edge; clean frames 0.
+- The kit's window title fades out while the camera is zoomed; centred or left, some zoom cut it.
+
 ## 0.7.3 - 2026-10-11
 
 - `assertFraming` fails a hold under scale 1.4, so a result cannot be "read" in a wide shot by naming the whole page as `resultTarget`, and fails a cursor still in view while the result is read. Both were in a film that passed 0.7.2.

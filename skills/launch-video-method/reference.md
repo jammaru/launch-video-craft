@@ -345,6 +345,7 @@ A full-width banner's center is the middle of the page, not its sentence. Offset
 | Readable | the result is larger than the view, cut by the frame (8px margin), or fills under 35% of the view's width and height |
 | Still | the result moves more than 6px while the camera holds it (a scroll that did not stop) |
 | Zoomed hold | the camera is under scale 1.4 while the result is held |
+| Clean edges | a held frame (rendered without the overlay) has type cut by its top, bottom, left, or right edge (`scripts/edges.py`) |
 | Uncovered | the cursor sits on the result after the press, or is still in view once the camera is on the result |
 
 Errors name the coordinates (`the cursor presses at (408, 297), 113px off "prompt-ps1" (186, 165, 190×24)`), so the fix is arithmetic, not guessing. Do not loosen a check to pass it; fix the anchor, the camera, or the timing.
