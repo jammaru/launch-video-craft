@@ -8,6 +8,10 @@
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg" /></a>
 </p>
 
+<p align="center">
+  <img src="assets/agent-demo.webp" alt="エージェントが launch-video-craft を使って動画のテンポを確かめ、ずれを直すところ" width="720">
+</p>
+
 ## これは何？
 
 自分でプロダクトを作ったら、ローンチのときに短いローンチ動画を作ることが多いと思います。一方で、SNS でよく見かけるおしゃれなローンチ動画を、ちゃんと作るのは難しい。
