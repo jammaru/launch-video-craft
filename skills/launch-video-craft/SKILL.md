@@ -54,7 +54,9 @@ Look for an earlier attempt before creating files: an existing `video/` folder, 
 
 **Where files go, and git.** The film is its own npm package at `video/<name>/`. If the product is not the repository you are in, clone it to `.product/<name>/`. Keep both out of git without changing a tracked file: append `video/` and `.product/` to `.git/info/exclude` unless the repository already ignores them. Do not edit `.gitignore`, do not commit, do not push, and do not open a pull request for film work unless the user asks. A test run in a cloud agent should leave the repository's diff empty. Remotion, React, and fonts never enter the product's dependencies or lockfile.
 
-**The user's request outranks this file.** If the user names an order ("logo first"), a payoff ("show the finished app"), a length, or a scene, that is the plan. The shape in phase 2 fills only what the user left open. Write the user's requests as the first lines of the notes and check them off in review.
+**The user's request outranks this file.** If the user names an order ("logo first"), a payoff ("show the finished app"), a length, a scene list, or what each scene should make the viewer understand, that is the plan. The default shape in phase 2 fills only what the user left open. Copy the user's scene structure and messages into NOTES.md under "User's requests" word for word, and check them off in review.
+
+**Ask for intent before inventing a story.** A reference clip and a logo are not a brief. If the user has not said what the film should prove, which scenes they want, in what order, or what each scene should communicate, ask once (in one message) before phase 2. Do not substitute the example film's question, failure, or shot order. When they have written a scene list, follow it even if it differs from the reference's count or length.
 
 ### Starting from the kit
 

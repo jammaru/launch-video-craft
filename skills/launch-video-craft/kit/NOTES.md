@@ -4,7 +4,9 @@ Fill each section before the phase that needs it. Review reads this file back.
 
 ## User's requests
 
-- (the order, payoff, length, language, and scenes the user named, word for word)
+Copy what the user asked for, word for word: the claim the film must prove, scene order, scenes to include or skip, what each scene should make the viewer understand, payoff, length, and language.
+
+-
 
 ## Reference, understood
 
