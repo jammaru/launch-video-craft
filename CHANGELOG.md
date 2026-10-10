@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 - 2026-10-10
+
+- `kit/`: a starter film project to copy into `video/<name>/`. Stage, camera, cursor, headline, anchor measurement, terminal, agent chat with tool cards, player, capture helpers, sync script for `assertBeats`, synthesized sound, and a NOTES.md template. Two demo shots render with real captured output and pass the beat checks. SKILL.md lists the order of operations and the check after each step.
+- Products with no UI: the command's real output is the screen. Capture in a scratch project with HOME moved (no personal paths), authenticate private repositories through `gh`, keep each spinner's last frame, assert the claim, and film rejections by running the real command on a failing input loaded with `lazyComponent`.
+- Agent shots: the person types the install command and one prompt; after Send every step is the agent's, shown as tool cards with captured output, with no cursor.
+- `assertBeats`: `cursor` is optional for read-only beats, and `proves: true` marks the action the headline names, so the 90-frame check follows it.
+- `example-cli.md`: how this skill's own launch film was made, including the cut the user rejected and the framing fixes for terminal text.
+- New review rejects: hand-typed terminal text, the person typing the agent's commands, personal paths in output, overlapping spinner states, framing a full-width row, an empty card before its first line, two cursors over a played film.
+
 ## 0.4.0 - 2026-10-10
 
 - Each product shot has a beat sheet (`beats.ts`) that the scene, camera, cursor, and sound import. `assertBeats` fails the render when a headline is cut short, the window rises under it, a press happens before the window settles or at scale 1, presses come less than 30 frames apart, or the headline's action is far from the headline.

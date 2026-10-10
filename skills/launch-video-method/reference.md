@@ -4,6 +4,8 @@ Reusable pieces for the phases in [SKILL.md](SKILL.md). None are tied to one pro
 
 ## Project
 
+`kit/` is this layout, ready to run: copy it to `video/<name>/`, `npm install`, `npm run sync`. Its two demo shots (`Command`, `Agent`) render with real captured output and pass `assertBeats`; replace them with this product's shots.
+
 ```
 video/<name>/                 # own package.json, npm install; kept out of git
   capture/                    # runs the product, writes JSON
@@ -90,6 +92,33 @@ Sequence when the product blocks something: empty state, submit the real form, i
 
 If there is no test host, drive the running app and save the network response or the rendered DOM. The bytes still come from the product.
 
+## Capturing a product with no UI
+
+When the product is a command, a library, or an agent skill, the terminal and the agent's tool cards are the shell, and the bytes inside them are the product. `kit/capture/lib.mjs` has the helpers below.
+
+**A clean place to run.** An empty project under `video/<name>/.scratch/<project>`, `git init`ed if the tool expects a repository. Run with `HOME` set to `.scratch`, so the tool prints `~/<project>` instead of a personal path. Keep `npm_config_cache` pointed at the real cache, or every run downloads everything.
+
+**Private repositories.** Moving HOME hides the keychain and the git config, so `git clone` asks for credentials and fails. Authenticate through the GitHub CLI for that process only:
+
+```js
+const env = {
+  HOME: scratchHome,
+  npm_config_cache: realNpmCache,
+  GH_TOKEN: execSync("gh auth token").toString().trim(),
+  GIT_CONFIG_COUNT: "1",
+  GIT_CONFIG_KEY_0: "credential.helper",
+  GIT_CONFIG_VALUE_0: "!gh auth git-credential",
+};
+```
+
+**What a person saw, not the bytes.** Interactive CLIs redraw: a spinner rewrites its line with `ESC[1G ESC[J` or `\r`. Split each line on those and keep the last piece, then strip color codes (`\x1b\[[0-9;?]*[A-Za-z]`) and OSC links. Set `FORCE_COLOR=0`. Squeeze runs of blank lines. Do not reword, reorder, or shorten the lines; choose which lines to frame instead.
+
+**Assert the claim.** After an install, the installed file exists. A rejection exits non-zero and prints the reason; the fix exits zero. A capture that does not assert can silently record a failure as the happy path.
+
+**Filming a rejection.** Build the failing input inside the film project (a drifting beat sheet, a bad config) and run the real command on it. If the command is the film's own renderer, register the failing composition with `lazyComponent`, so its error is raised only when that composition renders, not when the film bundles. Run with the default log level; `--log=error` hides the lines a person sees. Keep the output up to the error header, then the message and the reasons; drop the stack trace.
+
+**The agent's steps.** Capture what the agent would read and run: the skill file's path and line count, each command and its output. Text the agent writes in its own words (a diagnosis, a plan) is film copy, but any list it shows that came from a file (notes, a plan) is parsed from that file.
+
 Tools for the rest of the film, used as command-line programs rather than as libraries inside the scenes: ffmpeg (contact sheets, logo split, `ffprobe`, loudness), python3 with numpy (pixel counts and the synthesized bed; the standard-library `wave` module writes the files), and the product's own package manager for the capture. Remotion renders. The backdrop is generated, not cut from the reference.
 
 ## Proving the renderer
@@ -115,7 +144,7 @@ export const beats = assertBeats("PublishBlocked", {
   headline: { in: 2, out: 36, words: 6 },
   window: { in: 40, landed: 70 },
   actions: [
-    { name: "publish", camera: 112, cursor: 110, press: 118, result: 126, resultCamera: 168, holdUntil: 214, scale: 2.1 },
+    { name: "publish", camera: 112, cursor: 110, press: 118, result: 126, resultCamera: 168, holdUntil: 214, scale: 2.1, proves: true },
   ],
 });
 ```
@@ -124,13 +153,14 @@ export const beats = assertBeats("PublishBlocked", {
 // src/lib/beats.ts
 export type Action = {
   name: string;
-  camera: number;       // camera keyframe that lands on the control
-  cursor: number;       // cursor keyframe that lands on the control
+  camera: number;       // camera keyframe that lands on the control (or on the output, for a read)
+  cursor?: number;      // cursor keyframe that lands on the control; omit when nobody presses (an agent's step)
   press?: number;       // omit for a read-only beat
   result: number;       // the thing the press changed is visible
   resultCamera: number; // camera keyframe that lands on the result
   holdUntil: number;    // camera leaves the result after this
   scale: number;        // camera scale at the press
+  proves?: boolean;     // this is what the headline names; defaults to the first action
 };
 export type Beats = {
   duration: number;
@@ -149,8 +179,8 @@ export function assertBeats(id: string, b: Beats): Beats {
   }
   if (h && w && w.in < h.out) fail(`window rises at ${w.in}, while the headline is read until ${h.out}`);
   if (w && w.landed - w.in > 36) fail(`window takes ${w.landed - w.in} frames to land; use a stiffer spring`);
-  const first = b.actions[0];
-  if (h && first && first.result - h.out > 90 + 12) fail(`first result at ${first.result} is too far from the headline (${h.out})`);
+  const proof = b.actions.find((a) => a.proves) ?? b.actions[0];
+  if (h && proof && proof.result - h.out > 90 + 12) fail(`${proof.name}: what the headline names shows at ${proof.result}, ${proof.result - h.out} frames after it leaves (${h.out})`);
   let lastPress = -Infinity;
   for (const a of b.actions) {
     const at = a.press ?? a.result;
@@ -158,7 +188,8 @@ export function assertBeats(id: string, b: Beats): Beats {
     if (a.press !== undefined) {
       if (a.scale < 1.4) fail(`${a.name}: press at scale ${a.scale}; zoom to 1.4 or more first`);
       if (a.press - a.camera < 2) fail(`${a.name}: camera arrives at ${a.camera}, after or on the press ${a.press}`);
-      if (a.press - a.cursor < 4) fail(`${a.name}: cursor arrives at ${a.cursor}, too close to the press ${a.press}`);
+      if (a.cursor === undefined) fail(`${a.name}: a press needs a cursor keyframe`);
+      else if (a.press - a.cursor < 4) fail(`${a.name}: cursor arrives at ${a.cursor}, too close to the press ${a.press}`);
       if (a.result - a.press > 12) fail(`${a.name}: result ${a.result - a.press} frames after the press`);
       if (a.press - lastPress < 30) fail(`${a.name}: press ${a.press - lastPress} frames after the previous one`);
       lastPress = a.press;
@@ -257,7 +288,19 @@ A chat or log grows over time. Put each message in a wrapper with an index, give
 
 Type the prompt into the composer character by character, with a blinking caret, and a tick sound every few frames. The send click lands on a beat; the message appears in the log a few frames later.
 
-Render captured JSON as code lines that appear two frames apart. Color keys and strings, and pill the decisive value (`block`, `allow`) so the camera has one thing to read.
+Render captured JSON as code lines that appear two frames apart.
+
+**An agent doing the work.** `kit/src/components/Chat.tsx` has the pieces. The person's part is the composer: cursor to the field, type, cursor to Send, press. After that:
+
+| Piece | Shows | Source |
+| --- | --- | --- |
+| `SkillUse` | "Using skill <name>", then `Read <file> (<n> lines)` | the installed file |
+| `ToolCard` | `Running` while it runs, then `Ran <command>` and the output lines, 2 frames apart | capture |
+| `AgentText` | one or two sentences in the agent's voice | film copy |
+| `ToolCard` with no output | `Wrote <file>` | the file the fix changed |
+| `WorkingBar` | replaces the composer while the agent works | film copy |
+
+These beats are read-only in the beat sheet: no `cursor`, no `press`. The cursor leaves the reply after Send. Show at most about six lines of a long output and end with `… N more`, the way agent UIs collapse it, so the next step stays in the window. The camera frames a card by its left edge plus half the view width (960 / scale), not its center. Color keys and strings, and pill the decisive value (`block`, `allow`) so the camera has one thing to read.
 
 ## Type
 
@@ -346,6 +389,13 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | The user asked for an order or a scene that is not in the film | Rebuild the shot list from the user's request. The default shape only fills gaps. |
 | The film's length equals the example's while the reference is a different length | Recut to the reference's length and shot count. |
 | A blank or half-built frame was noted in review and the delivery was rendered anyway | Fix it first. A noted problem that ships is a failed review. |
+| Terminal or tool-card text is typed into a scene | Capture it from the real command and read the JSON. |
+| The person types the agent's commands, or the cursor presses during the agent's steps | After the prompt is sent, every step is a tool card with no cursor. |
+| A personal path or username shows in captured output | Capture again with HOME pointed at the scratch folder. |
+| A spinner line shows overlapping states | Keep only the last redraw of each line. |
+| The camera frames the middle of the window for a line of text | Anchor the text span, not the full-width row; for text being typed, measure the stable prompt. |
+| An empty card or box is visible before its first line | Hide the container with its first line. |
+| Two cursors during a played film | Move your cursor out of the view while the film inside plays. |
 | Zoomed type is cut off | Frame the sentence, not the middle of a full-width banner. Shrink Japanese lines if that locale was requested. |
 
 A bed around −20 dB mean, peak under 0 dB. The sheet cannot tell you a sound is late. Say so if you did not listen.

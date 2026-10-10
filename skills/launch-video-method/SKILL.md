@@ -10,12 +10,14 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Launch videos in Remotion
 
-The method for a short film (about 45–60 seconds, 1920×1080, 30fps) that feels like a reference clip and shows the real product. Follow the phases in order. Commands and starting numbers are in [reference.md](reference.md). One finished film, including the capture failures, the logo split, and the review that removed a shot's graphics twice, is in [example.md](example.md). Read the example after the phases. It is evidence. It is not the next film's script.
+The method for a short film (about 45–60 seconds, 1920×1080, 30fps) that feels like a reference clip and shows the real product. Follow the phases in order. Commands and starting numbers are in [reference.md](reference.md). Two finished films are evidence, not scripts: [example.md](example.md) for a product with screens (capture failures, the logo split, a shot whose graphics were removed twice), and [example-cli.md](example-cli.md) for a product with no UI, where the agent does the work on screen. Read the one closer to your product after the phases.
+
+Start the project from [kit/](kit/), not from an empty folder. It already has the stage, camera, cursor, headline, measurement, beat sheets, terminal, agent chat with tool cards, player, capture helpers, and sound. The steps are in [Starting from the kit](#starting-from-the-kit). Rewriting those parts by hand is where films drift.
 
 ## Why this shape
 
@@ -54,6 +56,19 @@ Look for an earlier attempt before creating files: an existing `video/` folder, 
 
 **The user's request outranks this file.** If the user names an order ("logo first"), a payoff ("show the finished app"), a length, or a scene, that is the plan. The shape in phase 2 fills only what the user left open. Write the user's requests as the first lines of the notes and check them off in review.
 
+### Starting from the kit
+
+Do these in order. Each line ends with a check that must pass before the next.
+
+1. `cp -R <skill>/kit video/<name>` and `npm install` inside it. The folder is ignored by git (see above).
+2. `npm run sync`: copies `assertBeats` from this skill's reference.md into `src/lib/beats.ts`. Set `SKILL_DIR` if it cannot find the skill. Check: the file exists.
+3. Fill `NOTES.md` through phase 2 before touching a scene. Check: every section up to Shots has content.
+4. Replace `capture/capture.mjs` with the product's real commands (phase 3). `npm run capture`. Check: it exits 0 and each claim is asserted.
+5. Put the backdrop at `public/backdrop.jpg` (phase 4), the logo layers in `public/logo/`, and `npm run audio`.
+6. One shot at a time: copy the closer demo (`Command` for a person typing, `Agent` for an agent working), write its `beats.ts` first, then the scene. Register it in `src/Film.tsx` and `src/scenes/durations.json`. Delete the demos when your shots exist.
+7. `npm run typecheck`, then `npm run still -- Shot-<Id> /tmp/s.png --frame=<n>`. A beat sheet that breaks a rule stops this command with the reason. Retime; do not loosen the rule.
+8. Review (phase 7), then `npm run render`.
+
 ### 1. Research
 
 **The reference is a timing diagram.** Download it, `ffprobe` it, make contact sheets for the whole clip and a tight strip for one camera move. Watch once for the arc, once for a single zoom. Write:
@@ -70,6 +85,8 @@ Look for an earlier attempt before creating files: an existing `video/` folder, 
 4. The constraints it is built around. They become one-line principles later.
 5. How the UI is rendered: which component draws it, which compiled CSS styles it, which icon set and fonts it uses, and where its translations live.
 
+**When the product has no screen** (a CLI, a library, an API, an agent skill), the output of running it is its real screen. The terminal that runs the command and the agent chat that calls it are the shells; the bytes inside them are captured. Find, from the README and the source: the one command a person types to get it, the one prompt a person gives an agent, every command or tool the agent runs because of it, and the file or result a user leaves with. Those are the shots.
+
 ### 2. Story
 
 Write the argument: one true sentence you can demonstrate. "The same rules check every publish, no matter who starts it, and they can stop it." A shot that does not prove part of it does not belong.
@@ -81,6 +98,8 @@ Then one sentence per shot, each naming a behavior you will run. Fit them into t
 **Each product shot's headline names its first visible action.** "Place the parts." is followed, within 3 seconds, by a part landing on the screen, zoomed. A headline that describes something the viewer sees 5 seconds later reads as a caption for the wrong picture. If a shot needs two ideas, it is two shots or one headline.
 
 **Show the gesture the product uses.** If parts are dragged, the cursor drags one from the palette to the screen and it lands. If a value is typed, it is typed. Clicking a palette tile and having the part appear elsewhere is not how the product works.
+
+**Each actor does only what it does.** A person types what a person types; an agent does the rest. For a tool used through an agent, the person types the install command and one prompt. Everything after Send is the agent's: which skill or tool it picked up, what it read, what it ran and what that printed, what it changed, and what it ran again. Those steps are tool cards with captured output, with no cursor and no typing. A film where the person types the agent's commands into a terminal shows a product the viewer will not use.
 
 **The payoff.** End the product shots on the thing a user leaves with: the finished app running, the published post, the generated file. If the user named it, it is a shot of its own before the principles.
 
@@ -103,6 +122,8 @@ Put every line of film copy (headlines, chat prompts, toast titles the product d
 ### 3. Capture
 
 Execute the shot sentences on the real test host, dev server, or a scripted browser. Save one JSON or HTML snapshot per screen per locale. Assert the outcome the film claims (rejected, then accepted), so a rerun cannot silently keep a failure. The video package does not own that runner. A config next to the capture points its root at the product, and the script invokes the product's package manager. The harness from this film is in [example.md](example.md).
+
+For a product with no screen, the capture is the film's text. Run the commands in a scratch project under `video/<name>/.scratch/` with HOME pointed there, so paths print as `~/my-product` and no personal path reaches the film. Strip color codes and keep each spinner's last frame. To show a rejection, run the real command and assert it fails; run the fix and assert it passes. A composition meant to fail is registered with `lazyComponent`. `kit/capture/lib.mjs` has these helpers; the reasons are in [reference.md](reference.md#capturing-a-product-with-no-ui).
 
 The failures you hit here are research. Wrong id, wrong field shape, wrong locale. Fix the capture, record why in a comment, and rerun. Never patch the JSON by hand. The example records four of these, with that product's field names. The lesson is the class of mistake, not the names.
 
@@ -146,7 +167,8 @@ The grammar, borrowed from the reference and applied everywhere. If the referenc
 - The window rises in from below with a quick spring (stiffness about 170, damping about 16, mass 0.9) and lands within about 30 frames. A soft spring (stiffness 70) is still drifting 2 seconds later, under the first clicks.
 - The camera stays at scale 1 until the window has landed (about frame 70; the whole window has been visible while it rose). Then it travels about 40 frames to the first control.
 - No press happens while the window is still moving or while the camera is below scale 1.4; a small control wants 1.8 or more. The order of one action is: camera arrives on the control, cursor arrives within a few frames, press 4–8 frames after the cursor (the camera has been there at least 2 frames), result appears 4–8 frames after the press, camera moves to the result within about 20–50 frames and holds it 25 frames or more. Pressing at scale 1 and zooming onto the aftermath shows a result whose cause was never visible.
-- The first action that proves the headline lands within 90 frames of the headline leaving. In the example: headline 2→36, window 40→~70, camera on Publish at 112, press 118, toast 126, toast held 168→214.
+- An agent's step is a read-only beat: `camera`, `result`, `resultCamera`, `holdUntil`, `scale`, and no `cursor` or `press`. While the agent works and while a result is read, the cursor leaves the view.
+- The first action that proves the headline lands within 90 frames of the headline leaving. If the headline names a later action, mark that action `proves: true`; `assertBeats` checks the 90 frames against it. In the example: headline 2→36, window 40→~70, camera on Publish at 112, press 118, toast 126, toast held 168→214.
 - Presses are at least 30 frames apart. Five clicks 16 frames apart read as one flicker. If the product repeats a gesture, show the first one zoomed and slow, then let the rest go by in one wide move.
 - Each product shot has at least two keyframes at scale 1.6 or more. The sentence the viewer must read reaches scale 1.9 or more. Zoom to read, never to decorate. While zoomed, the photograph is mostly out of frame.
 - The cursor glyph is about 44×50px, and it is a child of the camera so a zoom carries it. It arrives on the beat, presses, and moves on. Its tip comes from measuring the control after fonts load. A scene file with hand-written `{ x, y }` did not measure anything.
@@ -169,6 +191,8 @@ Do not show the user a film you have not rejected on a contact sheet. A weak fil
    - The cursor's coordinates are literals in the scene, or the cursor is not a child of the camera.
    - The copy is Japanese and the user did not ask for Japanese.
    - `assertBeats` is missing from the shot, or the scene has frame numbers that are not in its `beats.ts`.
+   - Terminal or tool-card text was typed into the scene instead of read from a capture file.
+   - The person presses or types after sending the agent its prompt.
 3. Full-size still of one zoomed click in that same shot. The control is sharp, because it is the component, and the cursor tip is on it. A soft zoom means the surface is still a bitmap.
 4. Only after those two stills pass: typecheck, render the whole film at half scale, and make a 1 fps contact sheet. The commands and the rest of the reject list are in [reference.md](reference.md).
 5. Sync check, per product shot: a 4 fps strip from headline out to the first result. Read it as a sentence: headline, window landing, camera arriving, press, result. If the frame after the headline does not show what the headline said, or the press happens in a wide frame, the shot fails.
@@ -200,10 +224,12 @@ The announcement post is not the film's script. Write it plainly: "I made X!!", 
 - [ ] At rest the window is about 1620×930 and the demonstrated UI fills it
 - [ ] The photograph sits behind product windows only; opening, logo, principles, and end card are flat fields
 - [ ] The only language is English, unless the user named another
+- [ ] The project started from `kit/`, and `src/lib/beats.ts` came from `npm run sync`
 - [ ] Every product shot has a `beats.ts` checked by `assertBeats`, and the scene uses only its numbers
 - [ ] Each headline is gone before its window rises, and its first action is visible within 90 frames
 - [ ] Every press happens on a settled window at scale 1.4 or more, with the camera and cursor already there
 - [ ] The product's own gesture is shown (drag is dragged)
+- [ ] With no UI: terminal and tool-card text is captured output; the person types only what a person types, and the agent's steps have no cursor
 - [ ] A line to be read reaches scale 1.9, and zoomed text is inside the frame
 - [ ] Nothing was traced from the reference; backdrop and score are new
 - [ ] The logo assembles once and appears assembled once on the end card

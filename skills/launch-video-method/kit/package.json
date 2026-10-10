@@ -1,0 +1,27 @@
+{
+  "name": "launch-film",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-beats.mjs",
+    "capture": "node capture/capture.mjs",
+    "audio": "python3 scripts/make-audio.py",
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "still": "remotion still src/index.ts",
+    "draft": "remotion render src/index.ts Launch /tmp/launch-draft.mp4 --scale=0.5 --log=error",
+    "render": "remotion render src/index.ts Launch ../launch.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.531",
+    "@remotion/google-fonts": "4.0.531",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "remotion": "4.0.531"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "typescript": "^5.9.0"
+  }
+}

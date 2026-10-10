@@ -16,7 +16,7 @@
 
 「ローンチ動画をいい感じに作って」とだけ頼むと、実際の UI を使わないことが多く、出来上がりもイメージとずれがちです。このリポジトリは、ローンチ動画を作る手順と判断の基準を Agent Skill にまとめたものです。
 
-[`launch-video-method`](skills/launch-video-method/SKILL.md) が本体です。技法は [`reference.md`](skills/launch-video-method/reference.md) にあります。[`example.md`](skills/launch-video-method/example.md) は、その手順で作った **1 本**（EmDash Preflight）の制作記録です。記録に出てくる問い、台詞、キャプチャの呼び出しはその製品向けなので、別の製品ではその製品用に書き直します。
+[`launch-video-method`](skills/launch-video-method/SKILL.md) が本体です。技法は [`reference.md`](skills/launch-video-method/reference.md) にあります。[`example.md`](skills/launch-video-method/example.md) は、その手順で作った **1 本**（EmDash Preflight）の制作記録です。[`example-cli.md`](skills/launch-video-method/example-cli.md) は、UI のない製品（このスキル自身）の制作記録です。記録に出てくる問い、台詞、キャプチャの呼び出しはその製品向けなので、別の製品ではその製品用に書き直します。[`kit/`](skills/launch-video-method/kit) は動画プロジェクトの雛形で、エージェントはここから作り始めます。
 
 ### このスキルで作った動画の例
 
@@ -82,7 +82,7 @@ launch-video-method に従って。
 
 ```text
 .
-├── skills/launch-video-method/   # SKILL.md、reference.md、example.md
+├── skills/launch-video-method/   # SKILL.md、reference.md、example.md、example-cli.md、kit/
 ├── .claude-plugin/               # Claude Code プラグイン
 ├── assets/
 └── scripts/check.py              # 公開前の静的チェック
