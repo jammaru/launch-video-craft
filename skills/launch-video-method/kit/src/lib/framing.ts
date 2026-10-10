@@ -76,8 +76,9 @@ const inside = (p: { x: number; y: number }, b: StageBox, pad = 0) =>
  * - its `target` (and `resultTarget`) was measured; no silent fallback position
  * - at the press, the cursor tip is on the target and the whole target is in view, clear of the edges
  * - a zoomed view shows the product, not the backdrop around the window
- * - during the hold, the result is entirely in view, fills a readable share of the frame,
- *   stays put (no scroll under a parked camera), and the cursor is not on it
+ * - during the hold, the camera is zoomed (1.4+), the result is entirely in view, fills a
+ *   readable share of the frame, stays put (no scroll under a parked camera), and the cursor
+ *   has left the view
  * `boxAt(name, frame)` returns the anchor in stage pixels at that frame (pass scroll there).
  * Throws once the anchors are measured, so a miss stops the render with the reason.
  */
@@ -143,6 +144,10 @@ export function assertFraming(
       const box = boxAt(read, f);
       const view = viewAt(camera, f);
       if (!box) break;
+      if (view.scale < 1.4) {
+        fail(`${a.name}: the camera is at scale ${view.scale.toFixed(2)} at ${f} while "${read}" is held; a result is read zoomed (1.4 or more), so name one element as resultTarget, not the whole page`);
+        break;
+      }
       if (box.w > view.w || box.h > view.h) {
         fail(`${a.name}: "${read}" (${round(box.w)}×${round(box.h)}) is larger than the view at scale ${view.scale.toFixed(2)} (frame ${f}); anchor the sentence, not its container, or use fit()`);
         break;
@@ -160,6 +165,10 @@ export function assertFraming(
         const tip = { x: keyed(f, cursor, "x"), y: keyed(f, cursor, "y") };
         if (inside(tip, box, 6)) {
           fail(`${a.name}: the cursor sits on "${read}" at ${f}; move it out of the way while the result is read`);
+          break;
+        }
+        if (f >= a.resultCamera + 6 && inside(tip, { x: view.x0, y: view.y0, w: view.w, h: view.h }, 30)) {
+          fail(`${a.name}: the cursor is still in view at ${f} (${round(tip.x)}, ${round(tip.y)}) while "${read}" is read; move it out of the view`);
           break;
         }
       }

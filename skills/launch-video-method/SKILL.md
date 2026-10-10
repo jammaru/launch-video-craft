@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.7.2"
+  version: "0.7.3"
 ---
 
 # Launch videos in Remotion
@@ -183,7 +183,7 @@ The grammar, borrowed from the reference and applied everywhere. If the referenc
 - Presses are at least 30 frames apart. Five clicks 16 frames apart read as one flicker. If the product repeats a gesture, show the first one zoomed and slow, then let the rest go by in one wide move.
 - Each product shot has at least two keyframes at scale 1.6 or more. The sentence the viewer must read reaches scale 1.9 or more. Zoom to read, never to decorate. While zoomed, the photograph is mostly out of frame.
 - The cursor glyph is about 44×50px, and it is a child of the camera so a zoom carries it. It arrives on the beat, presses, and moves on. Its tip comes from measuring the control after fonts load: `pointIn(boxAt("send"))`. A scene file with hand-written `{ x, y }`, or a fallback like `?? { x: 1200, y: 800 }`, did not measure anything; the click lands where the guess was.
-- **Place the camera from measurements.** Every camera keyframe after the establishing view is `fit(box)` or `fitLeft(box)` of a measured anchor (or a `union` of two). `fit` keeps a zoomed view inside the window, so the frame is the product and not the backdrop. `assertFraming` runs beside `assertBeats` and checks, in space: the cursor tip is on the target at the press, the target is in view, the result is whole, readable (35% of the view or more), not scrolling, and not under the cursor. Its errors print coordinates; fix the numbers it names.
+- **Place the camera from measurements.** Every camera keyframe after the establishing view is `fit(box)` or `fitLeft(box)` of a measured anchor (or a `union` of two). `fit` keeps a zoomed view inside the window, so the frame is the product and not the backdrop. `assertFraming` runs beside `assertBeats` and checks, in space: the cursor tip is on the target at the press, the target is in view, and during the hold the camera is zoomed (1.4 or more), the result is whole, readable (35% of the view or more), not scrolling, and the cursor has left the view. A `resultTarget` that is the whole page, or a union of everything, cannot pass at 1.4: name the one element. Its errors print coordinates; fix the numbers it names.
 - A terminal or log stops scrolling before the camera lands on it. A line the camera reads is framed whole; a line wider than the view is shortened in the capture (`… N more`) or framed by its left edge.
 - No picture is held unchanged for more than 4 seconds unless something in it moves by itself (`playing: true`).
 - Shot lengths are multiples of one beat. Camera moves ease; only single elements spring.

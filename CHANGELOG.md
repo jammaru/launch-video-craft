@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.3 - 2026-10-11
+
+- `assertFraming` fails a hold under scale 1.4, so a result cannot be "read" in a wide shot by naming the whole page as `resultTarget`, and fails a cursor still in view while the result is read. Both were in a film that passed 0.7.2.
+
 ## 0.7.2 - 2026-10-11
 
 - `Headline` lets its type leave before its field clears, so fading type never sits on the photograph; verify checks a still mid-exit for a plain field.
