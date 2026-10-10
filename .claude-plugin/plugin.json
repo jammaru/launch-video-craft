@@ -1,12 +1,12 @@
 {
-  "name": "launch-video-skills",
+  "name": "launch-video-craft",
   "description": "参考クリップのテンポに合わせ、実画面を使った Remotion ローンチ動画を作るスキル",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "skills": "./skills/",
   "author": {
     "name": "jammaru"
   },
-  "homepage": "https://github.com/jammaru/launch-video-skills",
-  "repository": "https://github.com/jammaru/launch-video-skills",
+  "homepage": "https://github.com/jammaru/launch-video-craft",
+  "repository": "https://github.com/jammaru/launch-video-craft",
   "license": "MIT"
 }

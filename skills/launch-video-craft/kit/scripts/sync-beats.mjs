@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const here = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repo = join(here, "..", "..");
-const skill = "launch-video-method";
+const skill = "launch-video-craft";
 const candidates = [
   process.env.SKILL_DIR,
   join(repo, ".agents/skills", skill),

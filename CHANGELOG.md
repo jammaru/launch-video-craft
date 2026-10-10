@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0 - 2026-10-11
+
+- **Rename to Launch Video Craft.** GitHub repo, Claude Code plugin, and Agent Skill are all `launch-video-craft` (was `launch-video-skills` / `launch-video-method`). Install with `npx skills add jammaru/launch-video-craft`. README includes a migration note from the old names.
+- The skills-launch demo film (`video/skills-launch.mp4`) uses the new product name, tagline, install command, and skill id.
+
 ## 0.8.0 - 2026-10-11
 
 Two films of a product with a web playground passed every check while showing a UI the agent wrote itself after reading the product's renderer: tabs and panels the product does not have.
@@ -89,12 +94,12 @@ Found by inspecting a film made with 0.7.0 by another model, which passed every 
 
 ## 0.2.0 - 2026-10-10
 
-- One skill is distributed: `launch-video-method`.
-- The finished-film record that was `remotion-launch-video` now lives in `skills/launch-video-method/example.md`.
+- One skill is distributed: `launch-video-craft`.
+- The finished-film record that was `remotion-launch-video` now lives in `skills/launch-video-craft/example.md`.
 - The example states which of its facts must not be copied onto another product.
 
 ## 0.1.0 - 2026-10-09
 
 - First public package of the launch-video skills.
-- `launch-video-method` is the general method.
+- `launch-video-craft` is the general method.
 - `remotion-launch-video` is the worked example from one finished film, with machine-specific paths removed.

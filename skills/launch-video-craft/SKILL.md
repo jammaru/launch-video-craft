@@ -1,5 +1,5 @@
 ---
-name: launch-video-method
+name: launch-video-craft
 description: >-
   Makes a product launch motion-graphics video in Remotion. Covers how to
   research a reference clip, how to build the story from what the product
@@ -10,10 +10,10 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.8.0"
+  version: "0.9.0"
 ---
 
-# Launch videos in Remotion
+# Launch Video Craft
 
 The method for a short film (1920×1080, 30fps, as long as this product needs: usually 20–60 seconds) that borrows the shape of a reference clip and shows the real product. Follow the phases in order. Commands and starting numbers are in [reference.md](reference.md). Two finished films are evidence, not scripts: [example.md](example.md) for a product with screens (capture failures, the logo split, a shot whose graphics were removed twice), and [example-cli.md](example-cli.md) for a product with no UI, where the agent does the work on screen. Read the one closer to your product after the phases. [example-failures.md](example-failures.md) is a film that went wrong, measured frame by frame: clicks beside their buttons, unreadable type on the photograph, a camera on empty space, and a review that never happened. Read it before phase 5.
 
