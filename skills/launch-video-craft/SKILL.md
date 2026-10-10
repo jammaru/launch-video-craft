@@ -10,7 +10,7 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.9.0"
+  version: "1.0.0"
 ---
 
 # Launch Video Craft

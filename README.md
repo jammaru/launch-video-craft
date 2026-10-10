@@ -5,6 +5,7 @@
 <h1 align="center">Launch Video Craft</h1>
 
 <p align="center">
+  <a href="https://github.com/jammaru/launch-video-craft/releases/tag/v1.0.0"><img alt="v1.0.0" src="https://img.shields.io/github/v/release/jammaru/launch-video-craft?label=version" /></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg" /></a>
 </p>
 

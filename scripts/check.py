@@ -108,8 +108,8 @@ def main() -> int:
             failures.append(f"{name}: name does not match directory")
         if "license: MIT" not in meta:
             failures.append(f"{name}: license is not MIT")
-        if 'version: "0.9.0"' not in meta:
-            failures.append(f"{name}: metadata.version is not 0.9.0")
+        if 'version: "1.0.0"' not in meta:
+            failures.append(f"{name}: metadata.version is not 1.0.0")
         hit = FORBIDDEN.search(body)
         if hit:
             failures.append(f"{name}: forbidden text {hit.group()!r}")
@@ -129,8 +129,8 @@ def main() -> int:
             if needle not in body:
                 failures.append(f"{name}: missing {needle!r}")
     plugin = (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
-    if '"version": "0.9.0"' not in plugin:
-        failures.append("plugin.json version is not 0.9.0")
+    if '"version": "1.0.0"' not in plugin:
+        failures.append("plugin.json version is not 1.0.0")
     if '"skills": "./skills/"' not in plugin:
         failures.append('plugin.json must set "skills": "./skills/"')
     logo = ROOT / "assets" / "logo.png"
