@@ -53,7 +53,18 @@ ffmpeg -ss 12 -t 3 -i ref.mp4 -vf "fps=6,scale=480:-1,tile=6x3" -frames:v 1 move
 
 If the clip URL is behind a proxy page, download the media URL it wraps, not the page.
 
-Write three lists in the project's notes before coding:
+First write what the reference is and how this product fits it, as roles, not pictures:
+
+| Reference scene | What it is for | In this product |
+| --- | --- | --- |
+| A phone rises with the app open | shows the product exists where you are | the playground, or the terminal for a CLI |
+| A prompt is typed, the agent works | shows the main gesture and its result | the one command, or the one prompt to an agent |
+| A second device picks up the task | shows a second way in | drop, if the product has one way in |
+| Logo and tagline | names it | the name shot |
+
+Then add the roles this product needs that the reference lacks, and drop the ones it cannot honestly fill. The reference's length and shot count are not targets.
+
+Then three lists before coding:
 
 | Borrow | Do not draw | Beat map |
 | --- | --- | --- |
@@ -375,13 +386,15 @@ Load Latin from `@remotion/google-fonts` with `subsets: ["latin"]` and only the 
 
 Generate, never copy. The photograph is only the world behind the product windows. Hook, logo, principles, and end card do not use it.
 
+The prompt is a place and a light, nothing else. Words in the prompt end up painted in the picture: "backdrop photograph for <product> launch video" gives a sky with the product's name in it, or a billboard. Leave out the product's name and every word about software, launches, or video.
+
 Do not generate rolling green hills with yellow and white wildflowers. That place is the worked example's, and a later film copied it onto every shot.
 
 Keep the structure, change the place:
 
-> Wide 16:9 photograph of [a place that fits this product], the subject in the lower third, a large empty sky, soft daylight, no people, no text, no logos.
+> Wide 16:9 landscape photograph of [a natural place: a coastline, a dune field, a lake under mountains, a moor], the land in the lower third, a large empty sky, [soft morning light], no people, no buildings, no signs, no writing.
 
-Save as JPEG around 1920px wide.
+Save as JPEG around 1920px wide. Open it at full size. Any letter, sign, logo, screen, or person means generate again; `npm run verify` fails on writing that tesseract can read. Write what you saw as the "Backdrop" line under "Film checked".
 
 ## Logo layers
 
@@ -419,7 +432,7 @@ Regenerate the bed when any duration changes.
 
 ## Review and repair
 
-`npm run verify` first, after every change to a scene, a beat sheet, or a capture. Open each `review/<Shot>-sheet.png`. The machine checks catch a miss by coordinates; the sheet is where you see a frame that is legal and still wrong (the camera on an empty half of the window, a banner from the product's demo mode, a card whose header is cut). Then the draft film:
+`npm run verify` first, after every change to a scene, a beat sheet, or a capture. After the delivery render, `npm run inspect` (run by `npm run render`) does the same for the finished mp4, and `npm run finish` is the last check before the user sees it. Open each `review/<Shot>-sheet.png`. The machine checks catch a miss by coordinates; the sheet is where you see a frame that is legal and still wrong (the camera on an empty half of the window, a banner from the product's demo mode, a card whose header is cut). Then the draft film:
 
 ```bash
 npx remotion render src/index.ts <Film> /tmp/draft.mp4 --scale=0.5 --log=error
@@ -452,7 +465,8 @@ Open the sheet and reject the film if any of these are true. Repair that shot, r
 | Several presses within a second | Keep presses 30+ frames apart. Show one slowly; let repeats go by in one move. |
 | A part appears after a click on a palette, in a product that uses drag | Drag it: cursor down on the palette item, the item follows the cursor, drops, lands. |
 | The user asked for an order or a scene that is not in the film | Rebuild the shot list from the user's request. The default shape only fills gaps. |
-| The film's length equals the example's while the reference is a different length | Recut to the reference's length and shot count. |
+| The film is padded to match the reference's length, or a needed proof was cut to match it | Recut to the shots this product needs. The reference gives the shape, not the length. |
+| The backdrop has letters, a sign, a logo, or a screen in it | Generate it again from a prompt that names only a place and the light: no product name, no "launch", "video", "app", "AI". |
 | A blank or half-built frame was noted in review and the delivery was rendered anyway | Fix it first. A noted problem that ships is a failed review. |
 | Terminal or tool-card text is typed into a scene | Capture it from the real command and read the JSON. |
 | The person types the agent's commands, or the cursor presses during the agent's steps | After the prompt is sent, every step is a tool card with no cursor. |
@@ -483,4 +497,4 @@ Plain launch voice: what you made, what it does for the reader, the link. Not th
 
 ## Timing
 
-30fps, 120 BPM, one beat = 15 frames. Shot lengths are multiples of 15. The example's lengths were hook 120, name 105, product shots 300–330, principles 150 (one line per 30 frames), end card 150, for a 49.5-second film. Scale them to the reference's total; do not copy the total.
+30fps, 120 BPM, one beat = 15 frames. Shot lengths are multiples of 15. The example's lengths were hook 120, name 105, product shots 300–330, principles 150 (one line per 30 frames), end card 150, for a 49.5-second film. Use them as sizes for one shot of each kind; the total is the sum of the shots this product needs.

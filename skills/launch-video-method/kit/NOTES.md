@@ -6,6 +6,18 @@ Fill each section before the phase that needs it. Review reads this file back.
 
 - (the order, payoff, length, language, and scenes the user named, word for word)
 
+## Reference, understood
+
+(one paragraph: what the film does, which moment carries it, what the viewer knows by the end)
+
+| Reference scene | What it is for | In this product (or "drop", and why) |
+| --- | --- | --- |
+| | | |
+
+Roles this product needs that the reference does not have:
+
+- 
+
 ## Reference, measured
 
 | What | Measured |
@@ -44,7 +56,7 @@ Fill each section before the phase that needs it. Review reads this file back.
 
 1. (one sentence per shot, naming a behavior you will run)
 
-Length target: the reference's length ±30%.
+Length: (the sum of the shots this product needs; say why each one is there. The reference's length is not a target.)
 
 ## Sources of on-screen text
 
@@ -61,6 +73,13 @@ Length target: the reference's length ±30%.
 Written after opening `review/<Shot>-sheet.png` from `npm run verify`. One line per shot; `npm run render` refuses without them.
 
 - Command: (what the press still, result still, and hold-end still show; whether the cursor tip is inside the red box; whether the result is whole and readable)
+
+## Film checked
+
+Written after `npm run render` (which runs inspect) and opening `review/film-sheet.png`, one row per shot of the finished mp4. Look for anything odd: a blank or half-built frame, text over the photograph, a cut-off line, a cursor off its target, writing in the backdrop. `npm run finish` refuses without these lines.
+
+- Backdrop: (public/backdrop.jpg at full size: no letters, signs, logos, screens, or people; a natural place)
+- Command: (what the five stills of this shot show, and anything odd)
 
 ## Problems found in review
 

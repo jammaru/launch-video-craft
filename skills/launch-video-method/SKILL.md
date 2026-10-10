@@ -10,12 +10,12 @@ description: >-
 license: MIT
 compatibility: ffmpeg, python3, and Node. The Remotion project stays outside the product lockfile.
 metadata:
-  version: "0.6.0"
+  version: "0.7.0"
 ---
 
 # Launch videos in Remotion
 
-The method for a short film (about 45–60 seconds, 1920×1080, 30fps) that feels like a reference clip and shows the real product. Follow the phases in order. Commands and starting numbers are in [reference.md](reference.md). Two finished films are evidence, not scripts: [example.md](example.md) for a product with screens (capture failures, the logo split, a shot whose graphics were removed twice), and [example-cli.md](example-cli.md) for a product with no UI, where the agent does the work on screen. Read the one closer to your product after the phases. [example-failures.md](example-failures.md) is a film that went wrong, measured frame by frame: clicks beside their buttons, unreadable type on the photograph, a camera on empty space, and a review that never happened. Read it before phase 5.
+The method for a short film (1920×1080, 30fps, as long as this product needs: usually 20–60 seconds) that borrows the shape of a reference clip and shows the real product. Follow the phases in order. Commands and starting numbers are in [reference.md](reference.md). Two finished films are evidence, not scripts: [example.md](example.md) for a product with screens (capture failures, the logo split, a shot whose graphics were removed twice), and [example-cli.md](example-cli.md) for a product with no UI, where the agent does the work on screen. Read the one closer to your product after the phases. [example-failures.md](example-failures.md) is a film that went wrong, measured frame by frame: clicks beside their buttons, unreadable type on the photograph, a camera on empty space, and a review that never happened. Read it before phase 5.
 
 Start the project from [kit/](kit/), not from an empty folder. It already has the stage, camera, cursor, headline, measurement, beat sheets, the framing check, the verify and render gate, terminal, agent chat with tool cards, player, capture helpers, and sound. The steps are in [Starting from the kit](#starting-from-the-kit). Rewriting those parts by hand is where films drift.
 
@@ -23,7 +23,7 @@ Start the project from [kit/](kit/), not from an empty folder. It already has th
 
 A reference clip is someone else's product. Tracing its graphics makes the film look like that product. Drawing the UI by hand makes it look unlike the thing being launched. So split the job:
 
-- From the reference: pacing, camera, cursor, and the kind of place the windows sit in.
+- From the reference: the shape of the story (what each scene is for, and in what order), and its film grammar (how windows enter, when the camera zooms, a cursor that presses). Not its length, not its shot count, not its content.
 - From the product: every screen, number, and sentence, drawn by the product's own renderer.
 - New: the backdrop photograph, the music, and the logo animation. Nothing is lifted from the reference.
 
@@ -68,13 +68,17 @@ Do these in order. Each line ends with a check that must pass before the next.
 6. One shot at a time: fill its row in NOTES.md "What each shot shows" (the one thing, its `data-anchor`, the gesture), copy the closer demo (`Command` for a person typing, `Agent` for an agent working), write its `beats.ts` with `target` and `resultTarget`, then the scene. Register it in `src/Film.tsx` and `src/scenes/durations.json`. Delete the demos when your shots exist.
 7. `npm run typecheck`, then `npm run verify`. It renders the press, result, and hold of every action with the anchors outlined and the cursor tip marked, and fails on a guessed coordinate, a broken beat sheet, a miss in space, or unreadable type. Check: it prints "Machine checks passed". Retime or re-anchor; do not loosen a check.
 8. Open every `review/<Shot>-sheet.png`, write what each shows under "Stills checked" in NOTES.md, then the rest of phase 7. `npm run render` refuses until verify is clean, newer than every source file, and each shot has its line.
+9. `npm run render`. It renders, then inspects the finished mp4 (`review/film-sheet.png`). Open the sheet, write "Film checked" in NOTES.md (one line for the backdrop, one per shot), and `npm run finish`. Check: it prints "Finished". Only then report to the user.
 
 Run `npm run verify` again after every change, however small. A film is verified when the last verify came after the last edit; a verify from before the fix proves nothing about the fix.
 
 ### 1. Research
 
-**The reference is a timing diagram.** Download it, `ffprobe` it, make contact sheets for the whole clip and a tight strip for one camera move. Watch once for the arc, once for a single zoom. Write:
+**The reference is a guide, not a template.** Download it, make contact sheets for the whole clip and a tight strip for one camera move. Watch once for the arc, once for a single zoom. Then write, before anything else:
 
+- What it is: one paragraph on what the film does and why it works. Which moment carries it (the first zoom onto the thing working, the payoff, the name landing), and what the viewer understands by the end.
+- Its scenes as roles: one row per scene, saying what the scene is for ("states the problem", "shows the main gesture", "shows a second way in", "names the product"), not what is drawn in it.
+- How this product fits: for each role, what in this product plays it, or "drop" when nothing honestly does. Then the roles this product needs that the reference does not have (a second proof, a terminal check, the payoff file). The product's nature decides the film: a CLI earns a terminal and an agent, a visual app earns its screens, a library earns the call and its result. Change the reference's shape wherever this product works differently, and say why in a line.
 - Borrow, with measurements, not adjectives: how many shots change field (photo, white, black), what fraction of the frame the window fills, how a window enters, when the zoom happens and how far, cursor size relative to a button, headline scale, how the ending breathes. A beat map of labels without these sizes is not research. The film that worked used a window of 1620×930 on a 1920×1080 stage. A window near 1040×640 leaves the photograph as the subject. That is a failed frame.
 - Do not draw: that brand's icons, illustrations, color shapes, layout gags. Name the ones you can point at in a frame. "Don't copy the vibe" is not a list.
 - Beat map: each reference beat, and what in this product plays the same role. A chat with an AI becomes this product's agent or API surface. Their logo lockup becomes this product's end card. A beat with no honest equivalent is dropped, not faked.
@@ -93,9 +97,9 @@ Run `npm run verify` again after every change, however small. A film is verified
 
 Write the argument: one true sentence you can demonstrate. "The same rules check every publish, no matter who starts it, and they can stop it." A shot that does not prove part of it does not belong.
 
-Then one sentence per shot, each naming a behavior you will run. Fit them into the reference's number of breaths. Delete a sentence before you speed one up.
+Then one sentence per shot, each naming a behavior you will run. Give each shot the time its one proof needs to be seen and read. Delete a sentence before you speed one up.
 
-**Length comes from the reference.** Count the reference's seconds and its shots. The film is that length within about ±30%, with about that many shots, unless the user asks otherwise. The example film's 1485 frames and seven shots are not a default. A 29-second reference makes a film of about 25–38 seconds.
+**Length comes from the product.** Add up the shots this product needs: a product shot is usually 7–11 seconds (headline, window, one or two actions, the hold on the proof), a name or end card 3–5, an opening 3–5, principles one second a line. Three proofs make a film of about 35–45 seconds; one proof, about 20–25. Do not stretch a film to match the reference's length, and do not cut a proof the product needs to match it. If the total runs past about 60 seconds, drop the weakest proof. The user's named length outranks this. Write the total and why each shot is there in NOTES.md.
 
 **Each product shot's headline names its first visible action.** "Place the parts." is followed, within 3 seconds, by a part landing on the screen, zoomed. A headline that describes something the viewer sees 5 seconds later reads as a caption for the wrong picture. If a shot needs two ideas, it is two shots or one headline.
 
@@ -107,7 +111,7 @@ Then one sentence per shot, each naming a behavior you will run. Fit them into t
 
 **The payoff.** End the product shots on the thing a user leaves with: the finished app running, the published post, the generated file. If the user named it, it is a shot of its own before the principles.
 
-A shape that works when the product has the pieces and the user did not name an order. A missing piece means skipping the shot:
+A shape that works when the product has the pieces and the user did not name an order. It is a starting point to bend to the product and to the reference's roles, not a checklist: a missing piece means skipping the shot, and a product that needs a different order gets it:
 
 1. **Opening.** Open the way the reference opens. If the reference opens on its logo, open on the logo. If it opens on a problem, use the actors, one line each, then the question they share.
 2. **Name.** The logo assembles, then the tagline. Once.
@@ -147,7 +151,7 @@ UI language and content language are separate settings. A translated shell with 
 
 **Portals do not render in frames.** A dialog or toast that portals to `document.body` with `fixed` positioning will not sit in a zoomed window. Read its copy from the capture and draw it in normal flow with the same components and classes.
 
-**Backdrop.** Generate a new photograph of the same kind of place as the reference: wide, low horizon, uncluttered sky where the windows sit, no people, text, or logos. Give it a slow drift. Where the product needs a content image, reuse that photograph so the film has one world.
+**Backdrop.** Generate a new photograph of a natural place: wide, low horizon, uncluttered sky where the windows sit, no people, text, or logos. Give it a slow drift. The prompt describes only the place and the light. It never contains the product's name, "launch", "video", "app", "AI", "code", "tech", or any word you would not want painted into the sky: image models write the words of their prompt onto signs, clouds, and screens. A prompt like "backdrop photograph for <product> launch video" produces a picture with the product's name in it. Open the result at full size before using it and look for letters, signs, logos, screens, and people; `npm run verify` also reads it with tesseract when installed. If there is anything, generate again with a plainer prompt. Where the product needs a content image, reuse that photograph so the film has one world.
 
 The photograph is the world behind the product windows only. The hook, every headline, the logo, the principles, and the end card sit on a plain field, paper or ink; the kit's `Headline` draws its own field. Type over a photograph is unreadable somewhere on the line, however it looks in one still: one film's headline measured 1.13:1 against the sky on its left half. Text and marks keep 3:1 or more against what is behind them, which `npm run verify` checks; a dark logo on an ink end card fails it. A film that leaves the photograph behind every shot has no contrast. Do not generate the example's place. Green hills and wildflowers are already used.
 
@@ -217,7 +221,11 @@ When the user says a shot looks like the reference, delete those graphics and ke
 
 ### 8. Delivery and report
 
-Full size, h264 and AAC, English unless the user named another locale. `ffprobe` the files, check the bed is audible, and run `git status --short`: it shows nothing from the film. Leave the mp4 where it is and tell the user the path. Do not commit it or open a pull request.
+Full size, h264 and AAC, English unless the user named another locale. `npm run render` renders and then runs `npm run inspect` on the finished mp4: five stills per shot taken from the file itself (start, quarter, half, three quarters, end) in `review/film-sheet.png`, and failures for black stretches, a frozen picture over 4 seconds, a length that does not match the shots, and missing or silent audio. A film that passed verify can still come out wrong: a font that did not load, an asset missing, a cut that lands on black.
+
+Open `review/film-sheet.png` and the full-size stills of anything that looks off. Look for: a blank or half-built frame, type over the photograph or cut by the frame, a cursor away from what it presses, a camera on empty space, writing in the backdrop, a demo banner, the same picture too long. Write one line per shot, and one for the backdrop, under "Film checked" in NOTES.md. Fix and render again if anything is wrong. `npm run finish` passes only when the last inspect is newer than the mp4, has no failures, and each line is written. Do not tell the user the film is done before it passes, whichever model you are.
+
+Run `git status --short`: it shows nothing from the film. Leave the mp4 where it is and tell the user the path. Do not commit it or open a pull request.
 
 Tell the user, plainly: which parts are real product output, which are rebuilt shell, which are invented surfaces. Which assets were generated. Which font and machine the Japanese depends on. What you did not check (usually: you did not listen to the sound against the picture). How to re-render.
 
@@ -231,7 +239,9 @@ The announcement post is not the film's script. Write it plainly: "I made X!!", 
 
 - [ ] The user's named order, payoff, length, and language were written first and are all in the film
 - [ ] Argument, beat map, and shot sentences were written before any scene
-- [ ] The film's length and shot count follow the reference, not the example
+- [ ] NOTES.md says what the reference is, its scenes as roles, and how this product fits them; the length is the sum of the shots this product needs, not the reference's or the example's
+- [ ] The backdrop prompt named only a place, and the backdrop has no writing, signs, logos, or people
+- [ ] `npm run finish` passed after the last render: the finished film was inspected and every shot looked at
 - [ ] Every product number and sentence on screen came from a capture
 - [ ] The hero frames are the real component, not a screenshot pasted into the window
 - [ ] At rest the window is about 1620×930 and the demonstrated UI fills it

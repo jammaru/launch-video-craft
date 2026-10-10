@@ -114,6 +114,24 @@ if (flat.length) {
   }
 }
 
+// 5. The backdrop photograph has no writing in it. Image models paint the words of their prompt
+// (a product name, "launch") into skies and signs; tesseract finds them when it is installed.
+const backdrop = join(here, "public/backdrop.jpg");
+if (existsSync(backdrop)) {
+  try {
+    const tsv = execFileSync("tesseract", [backdrop, "-", "--psm", "11", "tsv"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    const words = tsv
+      .split("\n")
+      .slice(1)
+      .map((row) => row.split("\t"))
+      .filter((cols) => Number(cols[10]) >= 75 && /[A-Za-z]{3,}/.test(cols[11] ?? ""))
+      .map((cols) => cols[11]);
+    if (words.length) failures.push(`public/backdrop.jpg has writing in it (${words.slice(0, 6).join(", ")}): generate it again from a prompt that names only a place`);
+  } catch {
+    console.log("tesseract is not installed: look at public/backdrop.jpg at full size for letters, signs, and logos yourself.");
+  }
+}
+
 writeFileSync(join(reviewDir, "report.json"), `${JSON.stringify({ at: new Date().toISOString(), failures, stills }, null, 2)}\n`);
 console.log(`${stills.length} stills in review/, one sheet per shot (review/<Shot>-sheet.png).`);
 if (failures.length) {

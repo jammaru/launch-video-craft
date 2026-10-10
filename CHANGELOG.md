@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 - 2026-10-10
+
+- The reference is a guide to the film's shape, not a template. Research writes what the reference is, its scenes as roles, and how this product fills each role (or drops it), and adds the roles this product needs. The product's nature decides the film.
+- Length comes from the product: the sum of the shots it needs (a product shot about 7–11 seconds), not the reference's length within ±30%.
+- Backdrop prompts name only a place and its light. No product name, "launch", "video", "app", or "AI", which image models paint into the picture. `npm run verify` reads the backdrop with tesseract (when installed) and fails on writing.
+- The finished film is inspected every time: `npm run render` runs `npm run inspect`, which takes five stills per shot from the mp4 into `review/film-sheet.png` and fails on black stretches, a frozen picture over 4 seconds, a length mismatch, and missing or silent audio. `npm run finish` passes only when the last inspect is newer than the mp4 and NOTES.md "Film checked" has a written line for the backdrop and each shot.
+
 ## 0.6.0 - 2026-10-10
 
 - Verification runs on every change, and the delivery render waits for it. `npm run verify` renders the headline, the landed window, and the press, result, and hold end of every action with each anchor outlined and the cursor tip marked, writes a sheet per shot, and fails on guessed coordinates, broken beat sheets, misses in space, and unreadable type. `npm run render` refuses until the last verify is clean, newer than every source file, and NOTES.md has a written "Stills checked" line per shot.
