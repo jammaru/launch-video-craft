@@ -4,3 +4,8 @@ assets/samples/*.mp4
 !assets/samples/*-preview.mp4
 video/
 .product/
+website/node_modules/
+website/dist/
+website/.astro/
+website/.cloudflare/
+website/.wrangler/

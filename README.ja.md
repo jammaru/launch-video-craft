@@ -95,11 +95,18 @@ gh skill update launch-video-craft
 
 手順そのものは [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md) にあります。
 
+## ウェブサイト
+
+[launch.jammaru.com](https://launch.jammaru.com)
+
+サイトは [`website/`](website/) にあります。そのディレクトリで `cf deploy` を実行すると公開されます。設定は `cloudflare.config.ts` です。
+
 ## リポジトリ構成
 
 ```text
 .
 ├── skills/launch-video-craft/   # SKILL.md、reference.md、example*.md、kit/
+├── website/                      # launch.jammaru.com
 ├── .claude-plugin/               # Claude Code プラグイン
 ├── assets/
 └── scripts/check.py              # 公開前の静的チェック

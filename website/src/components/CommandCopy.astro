@@ -1,0 +1,100 @@
+---
+interface Tab {
+  id: string;
+  label: string;
+  command: string;
+}
+
+interface Props {
+  tabs: Tab[];
+  label: string;
+  showTabs?: boolean;
+  shell?: boolean;
+}
+
+const { tabs, label, showTabs = true, shell = true } = Astro.props;
+const uid = `cmd-${Math.random().toString(36).slice(2, 8)}`;
+const first = tabs[0];
+---
+
+<div class="cmd-box" data-command-copy>
+  {
+    showTabs && tabs.length > 1 && (
+      <div class="cmd-tabs" role="tablist" aria-label={label}>
+        {tabs.map((tab, index) => (
+          <button
+            type="button"
+            class="cmd-tab"
+            role="tab"
+            id={`${uid}-tab-${tab.id}`}
+            aria-selected={index === 0 ? "true" : "false"}
+            aria-controls={`${uid}-panel-${tab.id}`}
+            data-tab={tab.id}
+            data-command={tab.command}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+  <div class="cmd-row">
+    {shell && <span class="cmd-prompt" aria-hidden="true">$</span>}
+    <code
+      class="cmd-code"
+      data-command-text
+      role="tabpanel"
+      id={`${uid}-panel-${first.id}`}
+      aria-labelledby={showTabs ? `${uid}-tab-${first.id}` : undefined}
+    >{first.command}</code>
+    <button type="button" class="cmd-copy" data-copy aria-label="Copy">Copy</button>
+  </div>
+</div>
+
+<script>
+  function setup(root: HTMLElement) {
+    if (root.dataset.ready === "true") return;
+    root.dataset.ready = "true";
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-tab]"));
+    const text = root.querySelector<HTMLElement>("[data-command-text]");
+    const copy = root.querySelector<HTMLButtonElement>("[data-copy]");
+    if (!text || !copy) return;
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((item) => item.setAttribute("aria-selected", "false"));
+        tab.setAttribute("aria-selected", "true");
+        text.textContent = tab.dataset.command ?? "";
+        const panelId = tab.getAttribute("aria-controls");
+        if (panelId) text.id = panelId;
+        text.setAttribute("aria-labelledby", tab.id);
+      });
+    });
+
+    copy.addEventListener("click", async () => {
+      const value = text.textContent ?? "";
+      const previous = copy.textContent;
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(value);
+        ok = true;
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = value;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        document.body.append(area);
+        area.select();
+        ok = document.execCommand("copy");
+        area.remove();
+      }
+      copy.textContent = ok ? "Copied" : "Failed";
+      window.setTimeout(() => {
+        copy.textContent = previous;
+      }, 1200);
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-command-copy]").forEach(setup);
+</script>

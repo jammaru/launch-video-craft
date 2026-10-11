@@ -95,11 +95,18 @@ Say this: after the logo, show the playground doing X, then the install.
 
 The method itself is in [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md).
 
+## Website
+
+[launch.jammaru.com](https://launch.jammaru.com)
+
+The site is in [`website/`](website/). From that directory, `cf deploy` publishes it. Configuration is `cloudflare.config.ts`.
+
 ## Repository
 
 ```text
 .
 ├── skills/launch-video-craft/   # SKILL.md, reference.md, example*.md, kit/
+├── website/                      # launch.jammaru.com
 ├── .claude-plugin/               # Claude Code plugin
 ├── assets/
 └── scripts/check.py              # static check before publish

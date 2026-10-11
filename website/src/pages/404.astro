@@ -1,0 +1,25 @@
+---
+import "@fontsource/outfit/latin-700.css";
+import "../styles/global.css";
+import { copy } from "../lib/i18n";
+export const prerender = true;
+const t = copy.ja;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{t.notFoundTitle}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+  </head>
+  <body>
+    <main class="shell missing">
+      <h1>{t.notFoundTitle}</h1>
+      <p>{t.notFoundBody}</p>
+      <p><a class="btn btn-primary" href="/">{t.notFoundHome}</a></p>
+    </main>
+  </body>
+</html>
