@@ -1,90 +1,110 @@
 <p align="center">
+  <a href="README.md"><img alt="English" src="https://img.shields.io/badge/English-111111?style=for-the-badge"></a>
+  <a href="README.ja.md"><img alt="日本語" src="https://img.shields.io/badge/%E6%97%A5%E6%9C%AC%E8%AA%9E-555555?style=for-the-badge"></a>
+</p>
+
+<p align="center">
   <img src="assets/logo.png" alt="Launch Video Craft" width="220">
 </p>
 
 <h1 align="center">Launch Video Craft</h1>
 
 <p align="center">
+  Turn your real product UI into a polished launch film with an AI coding agent.
+</p>
+
+<p align="center">
   <a href="https://github.com/jammaru/launch-video-craft/releases/tag/v1.0.0"><img alt="v1.0.0" src="https://img.shields.io/github/v/release/jammaru/launch-video-craft?label=version" /></a>
+  <a href="https://skills.sh/jammaru/launch-video-craft"><img alt="skills.sh" src="https://skills.sh/b/jammaru/launch-video-craft" /></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg" /></a>
 </p>
 
-## これは何？
+Agent Skill for Cursor, Claude Code, Codex, GitHub Copilot, and the other agents the [skills CLI](https://www.npmjs.com/package/skills) supports. It carries a launch film from the product's real UI through Remotion, including the checks on clicks, zoom, and frames. The path is verify, then review, then render.
 
-自分でプロダクトを作ったら、ローンチのときに短いローンチ動画を作ることが多いと思います。一方で、SNS でよく見かけるおしゃれなローンチ動画を、ちゃんと作るのは難しい。
-
-エージェントに「いい感じに作って」とだけ頼んでも、期待どおりの映像にはなりにくいです。実際の UI を使わず、勝手にそれっぽい画面を描いてしまう——そういうズレをなくす手順と判断の基準を [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md) にまとめています。参考クリップのテンポに合わせ、**本物の製品画面**を Remotion で映すところまでです。
+## Demo
 
 <p align="center">
-  <img src="assets/agent-demo.webp" alt="エージェントが launch-video-craft を使って動画のテンポを確かめ、ずれを直すところ" width="720">
+  <img src="assets/agent-demo.webp" alt="An agent using Launch Video Craft to check tempo and correct a drift" width="720">
 </p>
 
-## このスキルで作った動画の例
+Made with Launch Video Craft.
 
 | EmDash Preflight | ChatGPT |
 | :---: | :---: |
 | [![EmDash Preflight](assets/samples/emdash-preflight.webp)](https://x.com/jammaru_lab/status/2105501576437678510?s=20) | [![ChatGPT](assets/samples/chatgpt.webp)](https://x.com/jammaru_lab/status/2108406681839554662?s=20) |
 
-## インストール
-
-### 1. `npx skills add`（推奨）
+## Install
 
 ```bash
 npx skills add jammaru/launch-video-craft
 ```
 
-すべてのプロジェクトで使う場合は `-g` を付けます。
+For every project on the machine, add `-g`.
 
 ```bash
 npx skills add jammaru/launch-video-craft -g
 ```
 
-更新:
+Update:
 
 ```bash
 npx skills update launch-video-craft
 ```
 
-### 2. GitHub CLI
+Renamed from `launch-video-skills` / `launch-video-method`. Install and update with `launch-video-craft`.
 
-`gh skill` は GitHub CLI 2.97 以降です。
+### GitHub CLI
+
+`gh skill` needs [GitHub CLI](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/create-skills) 2.90.0 or later.
 
 ```bash
 gh skill install jammaru/launch-video-craft launch-video-craft --scope user
 gh skill update launch-video-craft
 ```
 
-### 3. Claude Code プラグイン
+### Claude Code plugin
 
 ```text
 /plugin marketplace add jammaru/launch-video-craft
 /plugin install launch-video-craft@launch-video-craft
 ```
 
-## 使い方
+## Why Launch Video Craft
 
-最初はざっくりで大丈夫です。参考動画とロゴを添え、Remotion で作ることと、`launch-video-craft` に従うことを書けば、エージェントが一通り作り始めます。参考動画はテンポや見せ方の参考にし、シーンの数や順番をそろえる必要はありません。
+The published thing is the production process that keeps an agent from shipping a sloppy launch film.
 
-できあがった映像を見て、違和感のあるところ（テンポ、ズームの位置、文言、映したい画面の順番など）をそのまま指示し、直してもらう——その往復で十分です。最初の依頼で全部を完璧に書く必要はありません。
+- The picture uses the product's real UI.
+- Tempo and camera come from a reference clip.
+- The film is built in Remotion.
+- Clicks, zoom, and frames are checked against the real screen.
+- Render is the last step: verify, then review, then render.
 
-詳しく書けるなら、伝えたいこと、入れたいシーンとその順番、各シーンで観客に何を伝えるか、尺や言語、必ず映したい画面も書いてあると近づきます。画面は製品の実際の UI を使うよう依頼してください。似た画面を後から描き直すのではなく、本物の画面やコマンドの出力を映します。
+## How it works
+
+A rough first ask is enough. Attach a reference clip and a logo, say the film is Remotion, and name `launch-video-craft`. The reference is for tempo and camera. The scene count and order do not have to match it.
+
+Watch the cut, then point at what feels wrong: tempo, where the zoom lands, a line of copy, the order of screens. That loop is the workflow. The first prompt does not have to specify everything.
+
+When you do know the cut, name what to say, which scenes and in what order, what each scene tells the viewer, the length, the language, and any screen that must appear. Ask for the product's real UI. The film shows the real screen or the real command output.
 
 ```text
-このプロダクトのローンチ動画を Remotion で作って。参考はこの動画、ロゴはこのファイル。
-実際の UI を使って。launch-video-craft に従って。
-〇〇を伝えたい。ロゴのあと Playground で△△を見せ、最後にインストール。
+Make a launch film for this product in Remotion. Reference clip attached, logo attached.
+Use the real UI. Follow launch-video-craft.
+Say this: after the logo, show the playground doing X, then the install.
 ```
 
-## リポジトリ構成
+The method itself is in [`skills/launch-video-craft/SKILL.md`](skills/launch-video-craft/SKILL.md).
+
+## Repository
 
 ```text
 .
-├── skills/launch-video-craft/   # SKILL.md、reference.md、example*.md、kit/
-├── .claude-plugin/               # Claude Code プラグイン
+├── skills/launch-video-craft/   # SKILL.md, reference.md, example*.md, kit/
+├── .claude-plugin/               # Claude Code plugin
 ├── assets/
-└── scripts/check.py              # 公開前の静的チェック
+└── scripts/check.py              # static check before publish
 ```
 
-## ライセンス
+## License
 
 [MIT](LICENSE) — Copyright (c) 2026 [jammaru](https://github.com/jammaru)

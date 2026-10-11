@@ -1,14 +1,14 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "launch-video-craft",
-  "description": "Claude Code marketplace for launch-video skills",
+  "description": "Agent Skills for a polished product launch film from the real UI.",
   "owner": {
     "name": "jammaru"
   },
   "plugins": [
     {
       "name": "launch-video-craft",
-      "description": "参考クリップのテンポに合わせ、実画面を使った Remotion ローンチ動画を作るスキル",
+      "description": "Agent Skill that turns a real product UI into a polished Remotion launch film.",
       "version": "1.0.0",
       "author": {
         "name": "jammaru"

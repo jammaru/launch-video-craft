@@ -1,6 +1,6 @@
 {
   "name": "launch-video-craft",
-  "description": "参考クリップのテンポに合わせ、実画面を使った Remotion ローンチ動画を作るスキル",
+  "description": "Agent Skill that turns a real product UI into a polished Remotion launch film.",
   "version": "1.0.0",
   "skills": "./skills/",
   "author": {
