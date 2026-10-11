@@ -1,6 +1,7 @@
 ---
 import "@fontsource/outfit/latin-700.css";
 import "../styles/global.css";
+import Analytics from "../components/Analytics.astro";
 import { copy } from "../lib/i18n";
 export const prerender = true;
 const t = copy.ja;
@@ -14,6 +15,7 @@ const t = copy.ja;
     <title>{t.notFoundTitle}</title>
     <meta name="robots" content="noindex" />
     <link rel="icon" href="/favicon.png" type="image/png" />
+    <Analytics />
   </head>
   <body>
     <main class="shell missing">

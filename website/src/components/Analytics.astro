@@ -1,0 +1,29 @@
+---
+---
+
+<script is:inline>
+  (function () {
+    var gaId = "G-BDTLDPM2F1";
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", gaId);
+    var loadAnalytics = function () {
+      var script = document.createElement("script");
+      script.async = true;
+      script.src = "https://www.googletagmanager.com/gtag/js?id=" + gaId;
+      document.head.append(script);
+    };
+    var scheduleAnalytics = function () {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(loadAnalytics, { timeout: 1500 });
+      } else {
+        window.setTimeout(loadAnalytics, 1000);
+      }
+    };
+    if (document.readyState === "complete") scheduleAnalytics();
+    else window.addEventListener("load", scheduleAnalytics, { once: true });
+  })();
+</script>
