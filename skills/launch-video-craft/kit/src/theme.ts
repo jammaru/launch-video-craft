@@ -31,6 +31,6 @@ export const color = {
   green: "#2f9e5b",
 };
 
-export const FPS = 30;
+export const FPS = 60;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;

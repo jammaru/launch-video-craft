@@ -58,10 +58,10 @@ export function Command() {
   const cursor: CursorKey[] = [
     { at: timing.cursorIn, x: 1300, y: 760 },
     { at: timing.focusCursor, ...click },
-    { at: timing.focus + 6, ...click },
+    { at: timing.focus + 12, ...click },
     // Typing: the cursor steps aside so it does not cover the text.
-    { at: timing.focus + 26, x: click.x + 40, y: click.y + 120 },
-    { at: timing.enter + 6, x: click.x + 40, y: click.y + 120 },
+    { at: timing.focus + 52, x: click.x + 40, y: click.y + 120 },
+    { at: timing.enter + 12, x: click.x + 40, y: click.y + 120 },
     // While the output is read, the cursor leaves the view.
     { at: timing.outputCamera, x: click.x + 700, y: click.y + 420 },
   ];

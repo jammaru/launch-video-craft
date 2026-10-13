@@ -14,7 +14,10 @@ import { fileURLToPath } from "node:url";
 
 const here = join(dirname(fileURLToPath(import.meta.url)), "..");
 const film = resolve(here, process.argv[2] ?? "../launch.mp4");
-const fps = 30;
+const fpsFrom = (rate) => {
+  const [num, den] = String(rate ?? "30/1").split("/").map(Number);
+  return den ? num / den : num;
+};
 const failures = [];
 
 if (!existsSync(film)) {
@@ -32,8 +35,10 @@ for (const id of order) {
   start += durations[id];
 }
 
-const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height", "-of", "json", film], { encoding: "utf8" }));
+const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height,r_frame_rate", "-of", "json", film], { encoding: "utf8" }));
 const seconds = Number(probe.format.duration);
+const video = probe.streams.find((stream) => stream.codec_type === "video");
+const fps = fpsFrom(video?.r_frame_rate);
 if (Math.abs(seconds - start / fps) > 0.2) failures.push(`the film is ${seconds.toFixed(2)}s; the shots add up to ${(start / fps).toFixed(2)}s`);
 
 // 1. Stills from the film, five per shot.

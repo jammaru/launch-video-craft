@@ -7,12 +7,13 @@ and a fade with the end card.
 
 import json
 import pathlib
+import re
 import wave
 
 import numpy as np
 
 RATE = 44100
-FPS = 30
+FPS = int(re.search(r"export const FPS = (\d+)", (pathlib.Path(__file__).resolve().parent.parent / "src" / "theme.ts").read_text()).group(1))
 BPM = 116
 BEAT = 60 / BPM
 HERE = pathlib.Path(__file__).resolve().parent.parent

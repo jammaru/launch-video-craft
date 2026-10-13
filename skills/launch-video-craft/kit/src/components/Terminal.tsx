@@ -1,7 +1,7 @@
 import type { Ref } from "react";
 import { useCurrentFrame } from "remotion";
 
-import { keyed, typed } from "../lib/motion";
+import { keyed, span, typed } from "../lib/motion";
 import type { Box } from "../lib/measure";
 import { color, fonts } from "../theme";
 
@@ -53,7 +53,7 @@ export function Terminal({ rows, scroll = 0, contentRef }: { rows: Row[]; scroll
           const visible = frame >= row.at;
           if (row.kind === "prompt") {
             const text = typed(frame, row.typeStart, row.command, row.perFrame);
-            const caretOn = frame >= row.focus && frame < row.enter && Math.floor((frame - row.focus) / 8) % 2 === 0;
+            const caretOn = frame >= row.focus && frame < row.enter && Math.floor((frame - row.focus) / span(8)) % 2 === 0;
             return (
               <div key={index} data-anchor={row.anchor ?? `row-${index}`} style={{ visibility: visible ? "visible" : "hidden", whiteSpace: "pre" }}>
                 <span data-anchor={`${row.anchor ?? `row-${index}`}-ps1`}>
@@ -100,7 +100,7 @@ export function Terminal({ rows, scroll = 0, contentRef }: { rows: Row[]; scroll
 }
 
 /**
- * Scroll that keeps the newest visible row inside the viewport, eased over 8 frames.
+ * Scroll that keeps the newest visible row inside the viewport, eased over about a quarter of a second.
  * `boxes` are measured on the unscrolled content, so they hold on every frame.
  */
 export function terminalScroll(frame: number, rows: Row[], boxes: Record<string, Box>, viewport: number): number {
@@ -111,7 +111,7 @@ export function terminalScroll(frame: number, rows: Row[], boxes: Record<string,
     if (!box) return;
     const need = Math.max(0, box.y + box.h + TERM.padY - viewport);
     if (need > current) {
-      keys.push({ at: row.at, s: current }, { at: row.at + 8, s: need });
+      keys.push({ at: row.at, s: current }, { at: row.at + span(8), s: need });
       current = need;
     }
   });

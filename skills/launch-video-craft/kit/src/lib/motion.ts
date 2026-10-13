@@ -1,5 +1,12 @@
 import { Easing, interpolate, spring } from "remotion";
 
+import { FPS } from "../theme";
+
+/** Frames for a duration designed at 30fps. At 60fps a 16-frame rise takes 32 frames, the same half-second. */
+export function span(at30: number, fps = FPS): number {
+  return at30 * (fps / 30);
+}
+
 export const ease = Easing.bezier(0.65, 0, 0.35, 1);
 export const settle = Easing.bezier(0.16, 1, 0.3, 1);
 
@@ -26,7 +33,7 @@ export function keyed<K extends string>(frame: number, keys: Key<K>[], prop: K):
   return keys[keys.length - 1][prop];
 }
 
-/** The window spring: stiffness 170, damping 16, mass 0.9 lands in about 30 frames. */
+/** The window spring: stiffness 170, damping 16, mass 0.9 lands in about one second. */
 export function windowSpring(frame: number, fps: number, start: number): number {
   return spring({ frame: frame - start, fps, config: { stiffness: 170, damping: 16, mass: 0.9 } });
 }

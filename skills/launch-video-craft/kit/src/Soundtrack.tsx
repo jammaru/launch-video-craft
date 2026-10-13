@@ -2,7 +2,7 @@ import { Html5Audio, Sequence, staticFile } from "remotion";
 
 import demo from "./captured/demo.json";
 import { copy } from "./copy";
-import { typingEnd } from "./lib/motion";
+import { span, typingEnd } from "./lib/motion";
 import { timing as agent } from "./scenes/Agent.beats";
 import { timing as command } from "./scenes/Command.beats";
 import durations from "./scenes/durations.json";
@@ -11,7 +11,7 @@ type Sound = "click" | "key" | "pop" | "whoosh" | "clap" | "buzz" | "chime";
 type Cue = [frame: number, sound: Sound, volume?: number];
 type SceneId = keyof typeof durations;
 
-function keys(from: number, to: number, every = 3): Cue[] {
+function keys(from: number, to: number, every = span(3)): Cue[] {
   const cues: Cue[] = [];
   for (let at = from; at < to; at += every) cues.push([at, "key", 0.35]);
   return cues;
@@ -48,7 +48,7 @@ export function Soundtrack() {
     <>
       <Html5Audio src={staticFile("audio/bed.wav")} volume={0.6} />
       {placed.map(({ from, sound, volume }, index) => (
-        <Sequence key={index} from={from} durationInFrames={45} layout="none">
+        <Sequence key={index} from={from} durationInFrames={span(45)} layout="none">
           <Html5Audio src={staticFile(`audio/${sound}.wav`)} volume={volume * 0.55} />
         </Sequence>
       ))}

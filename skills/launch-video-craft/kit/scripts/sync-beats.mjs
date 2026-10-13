@@ -11,6 +11,7 @@ const repo = join(here, "..", "..");
 const skill = "launch-video-craft";
 const candidates = [
   process.env.SKILL_DIR,
+  join(here, ".."),
   join(repo, ".agents/skills", skill),
   join(repo, ".claude/skills", skill),
   join(repo, ".cursor/skills", skill),

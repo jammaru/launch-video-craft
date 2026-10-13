@@ -1,7 +1,7 @@
 import { createContext, useContext, type CSSProperties, type ReactNode, type Ref } from "react";
-import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 
-import { keyed, ramp, type Key } from "../lib/motion";
+import { keyed, ramp, span, type Key } from "../lib/motion";
 import { color, fonts } from "../theme";
 
 export const WIN = { x: 150, y: 96, w: 1620, h: 930 };
@@ -141,20 +141,23 @@ export type CursorKey = Key<"x" | "y">;
 /** A 44×50 arrow. Render it inside <Camera> so zooms carry it. */
 export function Cursor({ keys, presses = [], from = 0 }: { keys: CursorKey[]; presses?: number[]; from?: number }) {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const dip = span(10, fps);
+  const ring = span(18, fps);
   if (frame < from) return null;
   const x = keyed(frame, keys, "x");
   const y = keyed(frame, keys, "y");
   const squash = presses.reduce((value, at) => {
     const t = frame - at;
-    return t >= 0 && t <= 10 ? Math.min(value, 1 - 0.2 * Math.sin((t / 10) * Math.PI)) : value;
+    return t >= 0 && t <= dip ? Math.min(value, 1 - 0.2 * Math.sin((t / dip) * Math.PI)) : value;
   }, 1);
-  const show = ramp(frame, from, from + 8);
+  const show = ramp(frame, from, from + span(8, fps));
   return (
     <div style={{ position: "absolute", left: x, top: y, zIndex: 100, opacity: show }}>
       {presses
-        .filter((at) => frame >= at && frame < at + 18)
+        .filter((at) => frame >= at && frame < at + ring)
         .map((at) => {
-          const t = (frame - at) / 18;
+          const t = (frame - at) / ring;
           return (
             <div
               key={at}
@@ -198,7 +201,8 @@ export function Cursor({ keys, presses = [], from = 0 }: { keys: CursorKey[]; pr
 }
 
 /**
- * Words rise one by one, 3 frames apart; exits upward over 14 frames from `out`.
+ * Words rise one by one, a tenth of a second apart; the rise takes about half a second.
+ * At 60fps that is 6 frames apart and 32 frames of rise. Exits upward over about half a second.
  * The headline sits on its own plain field, never on the photograph: type over a photo
  * loses contrast wherever the picture is dark or busy. The field fades as the headline leaves.
  */
@@ -217,6 +221,7 @@ export function Headline({
   size = 116,
   tone = color.ink,
   field = fieldFor(tone),
+  cover = true,
 }: {
   text: string;
   start: number;
@@ -224,17 +229,22 @@ export function Headline({
   size?: number;
   tone?: string;
   field?: string;
+  /** False draws a plate behind the words only, so the object stays visible around the title. */
+  cover?: boolean;
 }) {
   const frame = useCurrentFrame();
-  // The type is gone (8 frames) before its field starts to clear (6 to 14), so a fading
-  // headline never sits on the photograph behind it.
-  const leave = out === undefined ? 0 : ramp(frame, out, out + 8);
-  const clear = out === undefined ? 0 : ramp(frame, out + 6, out + 14);
+  const { fps } = useVideoConfig();
+  // The type is gone before its field starts to clear, so a fading headline never sits on the photograph.
+  const leave = out === undefined ? 0 : ramp(frame, out, out + span(8, fps));
+  const clear = out === undefined ? 0 : ramp(frame, out + span(6, fps), out + span(14, fps));
   const words = text.split(" ");
   const fitted = Math.min(size, 1700 / (text.length * 0.56));
+  const plate: CSSProperties | undefined = cover
+    ? undefined
+    : { backgroundColor: field, padding: `${fitted * 0.28}px ${fitted * 0.55}px ${fitted * 0.4}px` };
   return (
     <AbsoluteFill>
-    <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - clear }} />
+    {cover ? <AbsoluteFill style={{ backgroundColor: field, opacity: 1 - clear }} /> : null}
     <AbsoluteFill
       style={{
         alignItems: "center",
@@ -243,6 +253,7 @@ export function Headline({
         transform: `translateY(${-leave * 70}px)`,
       }}
     >
+    <div style={plate}>
       <div
         style={{
           display: "flex",
@@ -258,7 +269,7 @@ export function Headline({
         }}
       >
         {words.map((word, index) => {
-          const t = ramp(frame, start + index * 3, start + index * 3 + 16);
+          const t = ramp(frame, start + index * span(3, fps), start + index * span(3, fps) + span(16, fps));
           return (
             <span key={index} style={{ display: "inline-block", transform: `translateY(${(1 - t) * 115}%)`, opacity: t }}>
               {word}
@@ -266,6 +277,7 @@ export function Headline({
           );
         })}
       </div>
+    </div>
     </AbsoluteFill>
     </AbsoluteFill>
   );

@@ -1,7 +1,7 @@
 import { BAR, WIN, type CameraKey, type CursorKey } from "../components/Stage";
 import type { Beats } from "./beats";
 import type { Box } from "./measure";
-import { keyed } from "./motion";
+import { keyed, span } from "./motion";
 
 /** A rectangle in stage pixels (the 1920×1080 coordinates the camera and cursor use). */
 export type StageBox = { x: number; y: number; w: number; h: number };
@@ -167,7 +167,7 @@ export function assertFraming(
           fail(`${a.name}: the cursor sits on "${read}" at ${f}; move it out of the way while the result is read`);
           break;
         }
-        if (f >= a.resultCamera + 6 && inside(tip, { x: view.x0, y: view.y0, w: view.w, h: view.h }, 30)) {
+        if (f >= a.resultCamera + span(6) && inside(tip, { x: view.x0, y: view.y0, w: view.w, h: view.h }, 30)) {
           fail(`${a.name}: the cursor is still in view at ${f} (${round(tip.x)}, ${round(tip.y)}) while "${read}" is read; move it out of the view`);
           break;
         }

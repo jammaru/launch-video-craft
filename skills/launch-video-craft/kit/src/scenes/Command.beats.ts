@@ -4,28 +4,29 @@ import { assertBeats } from "../lib/beats";
 import { typingEnd } from "../lib/motion";
 import durations from "./durations.json";
 
-// A person types a command; the product's real output answers.
-const focus = 104;
-const typeStart = focus + 4;
-const typePerFrame = 1;
-const enter = Math.max(typingEnd(typeStart, demo.command, typePerFrame) + 6, focus + 30);
+// A person types a command; the product's real output answers. Frames are at the kit's 60fps:
+// the same seconds as the old 30fps sheet, with twice the frames.
+const focus = 208;
+const typeStart = focus + 8;
+const typePerFrame = 0.5;
+const enter = Math.max(typingEnd(typeStart, demo.command, typePerFrame) + 12, focus + 60);
 
 export const timing = {
-  headlineIn: 2,
-  headlineOut: 36,
-  windowIn: 40,
-  windowLanded: 70,
-  wideUntil: 72,
-  cursorIn: 60,
-  focusCamera: 100,
-  focusCursor: 98,
+  headlineIn: 4,
+  headlineOut: 72,
+  windowIn: 80,
+  windowLanded: 140,
+  wideUntil: 144,
+  cursorIn: 120,
+  focusCamera: 200,
+  focusCursor: 196,
   focus,
   typeStart,
   typePerFrame,
   enter,
-  firstLine: enter + 4,
-  lineEvery: 2,
-  outputCamera: enter + 30,
+  firstLine: enter + 8,
+  lineEvery: 4,
+  outputCamera: enter + 60,
 };
 
 export const beats = assertBeats("Command", {

@@ -3,7 +3,7 @@ import type { ReactNode, Ref } from "react";
 import { useCurrentFrame } from "remotion";
 
 import type { Box } from "../lib/measure";
-import { keyed, ramp } from "../lib/motion";
+import { keyed, ramp, span } from "../lib/motion";
 import { color, fonts } from "../theme";
 import { BAR, WIN } from "./Stage";
 
@@ -40,10 +40,10 @@ export function ChatLog({ scroll, logRef, children, opacity = 1 }: { scroll: num
   );
 }
 
-/** One item of the log: mounted from the start, fades in and rises 26px over 14 frames from `at`. */
+/** One item of the log: mounted from the start, fades in and rises 26px over about half a second from `at`. */
 export function Reveal({ at, anchor, children }: { at: number; anchor: string; children: ReactNode }) {
   const frame = useCurrentFrame();
-  const progress = ramp(frame, at, at + 14);
+  const progress = ramp(frame, at, at + span(14));
   return (
     <div data-anchor={anchor}>
       <div style={{ opacity: progress, transform: `translateY(${(1 - progress) * 26}px)` }}>{children}</div>
@@ -103,7 +103,7 @@ export function ToolCard({ kind = "run", verb, name, lines = [], start = 0 }: { 
                 whiteSpace: "pre-wrap",
                 color: line.tone === "error" ? color.rose : undefined,
                 fontWeight: line.tone === "strong" ? 700 : 400,
-                opacity: ramp(frame, start + index * 2, start + index * 2 + 8),
+                opacity: ramp(frame, start + index * span(2), start + index * span(2) + span(8)),
               }}
             >
               {line.text || " "}
@@ -183,7 +183,7 @@ export function Composer({ text, placeholder, chip, caret, pressed }: { text: st
 export type ScrollKey = { at: number; s: number };
 
 /**
- * Scroll keys that follow each new item: when an item appears, the log eases over 18 frames until
+ * Scroll keys that follow each new item: when an item appears, the log eases for about 0.6s until
  * its bottom sits 24px above the composer. An item at or before frame 0 is already there when the
  * shot opens (a conversation continued from the shot before).
  */
@@ -196,9 +196,9 @@ export function chatScroll(items: { at: number; anchor: string }[], boxes: Recor
   const keys: ScrollKey[] = [{ at: 0, s: opened }];
   items.forEach((item, index) => {
     if (item.at <= 0) return;
-    const next = items.slice(index + 1).find((later) => later.at > item.at)?.at ?? item.at + 30;
+    const next = items.slice(index + 1).find((later) => later.at > item.at)?.at ?? item.at + span(30);
     const from = keys[keys.length - 1].s;
-    keys.push({ at: item.at, s: from }, { at: Math.min(item.at + 18, next), s: Math.max(from, target(item.anchor)) });
+    keys.push({ at: item.at, s: from }, { at: Math.min(item.at + span(18), next), s: Math.max(from, target(item.anchor)) });
   });
   return keys;
 }

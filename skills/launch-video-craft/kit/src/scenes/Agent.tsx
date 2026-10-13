@@ -8,7 +8,7 @@ import { Backdrop, Camera, Cursor, Headline, rise, Window, type CameraKey, type 
 import { copy } from "../copy";
 import { assertFraming, fit, pointIn, stageBox, union } from "../lib/framing";
 import { useAnchors } from "../lib/measure";
-import { keyed, typed, windowSpring } from "../lib/motion";
+import { keyed, span, typed, windowSpring } from "../lib/motion";
 import { beats, timing } from "./Agent.beats";
 
 // The log in order. Each item is mounted from the start and appears at its frame.
@@ -29,9 +29,9 @@ export function Agent() {
   const enter = windowSpring(frame, fps, timing.windowIn);
   const scroll = chatScroll(items, log.boxes);
 
-  const sent = frame >= timing.send + 2;
+  const sent = frame >= timing.send + span(2);
   const text = sent ? "" : typed(frame, timing.typeStart, copy.agent.prompt, timing.typePerFrame);
-  const caret = frame >= timing.focus && !sent && Math.floor((frame - timing.focus) / 8) % 2 === 0;
+  const caret = frame >= timing.focus && !sent && Math.floor((frame - timing.focus) / span(8)) % 2 === 0;
 
   // Composer anchors sit on the surface; log anchors scroll, so they are placed at the frame asked for.
   const boxAt = (name: string, at: number) => stageBox(surface.boxes[name]) ?? logStageBox(log.boxes[name], scroll, at);
@@ -46,18 +46,18 @@ export function Agent() {
     { at: 0, x: 960, y: 540, scale: 1 },
     { at: timing.wideUntil, x: 960, y: 540, scale: 1 },
     { at: timing.composerCamera, ...fit(composer, { fill: 0.95, max: 1.8 }) },
-    { at: timing.send + 4, ...fit(composer, { fill: 0.95, max: 1.8 }) },
+    { at: timing.send + span(4), ...fit(composer, { fill: 0.95, max: 1.8 }) },
     { at: timing.toolCamera, ...fit(reply) },
     { at: beats.duration, ...fit(reply) },
   ];
   const cursor: CursorKey[] = [
     { at: timing.cursorIn, x: 1380, y: 900 },
     { at: timing.focusCursor, ...typeAt },
-    { at: timing.focus + 8, ...typeAt },
-    { at: timing.focus + 24, x: typeAt.x + 160, y: typeAt.y + 50 },
-    { at: timing.sendCursor - 12, x: typeAt.x + 160, y: typeAt.y + 50 },
+    { at: timing.focus + span(8), ...typeAt },
+    { at: timing.focus + span(24), x: typeAt.x + 160, y: typeAt.y + 50 },
+    { at: timing.sendCursor - span(12), x: typeAt.x + 160, y: typeAt.y + 50 },
     { at: timing.sendCursor, ...sendAt },
-    { at: timing.send + 10, ...sendAt },
+    { at: timing.send + span(10), ...sendAt },
     // After send the person only watches; the cursor leaves the agent's reply.
     { at: timing.toolCamera, x: sendAt.x + 400, y: sendAt.y + 300 },
   ];
@@ -78,13 +78,13 @@ export function Agent() {
                 <AgentText>{copy.agent.using}</AgentText>
               </Reveal>
               <Reveal at={timing.tool} anchor="tool">
-                <ToolCard verb={copy.agent.ran} name={demo.command} lines={demo.lines.map((line) => ({ text: line }))} start={timing.tool + 4} />
+                <ToolCard verb={copy.agent.ran} name={demo.command} lines={demo.lines.map((line) => ({ text: line }))} start={timing.tool + span(4)} />
               </Reveal>
               <Reveal at={timing.answer} anchor="answer">
                 <AgentText>{copy.agent.answer}</AgentText>
               </Reveal>
             </ChatLog>
-            <Composer text={text} placeholder={copy.agent.placeholder} chip={copy.agent.chip} caret={caret} pressed={frame >= timing.send && frame < timing.send + 6} />
+            <Composer text={text} placeholder={copy.agent.placeholder} chip={copy.agent.chip} caret={caret} pressed={frame >= timing.send && frame < timing.send + span(6)} />
           </ChatSurface>
         </Window>
         <Cursor from={timing.cursorIn} presses={[timing.focus, timing.send]} keys={cursor} />

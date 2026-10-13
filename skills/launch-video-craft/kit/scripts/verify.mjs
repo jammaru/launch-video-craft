@@ -3,6 +3,7 @@
 //
 // For every shot with a beat sheet it renders, with the framing overlay on:
 //   headline (mid-read and mid-exit), landed (window at rest), and per action: press, result, hold end.
+// A beat sheet with no clicks also gets the body after the headline, the middle, and near the end.
 // Shots without a beat sheet (title, logo, end card) get 3 stills.
 // Then it checks: no guessed fallback coordinates in scenes, every still rendered
 // (assertBeats / assertFraming did not throw), type on flat fields is readable, held frames
@@ -18,6 +19,9 @@ import { renderStill, selectComposition } from "@remotion/renderer";
 import { build } from "esbuild";
 
 const here = join(dirname(fileURLToPath(import.meta.url)), "..");
+const filmFps = Number(readFileSync(join(here, "src/theme.ts"), "utf8").match(/export const FPS = (\d+)/)?.[1] ?? 60);
+/** A duration designed at 30fps, in this film's frames. */
+const span = (at30) => Math.round(at30 * (filmFps / 30));
 const reviewDir = join(here, "review");
 rmSync(reviewDir, { recursive: true, force: true });
 mkdirSync(reviewDir, { recursive: true });
@@ -66,19 +70,31 @@ try {
 function framesFor(id) {
   const b = sheets[id];
   const d = durations[id];
-  if (!b) return [["early", Math.round(d * 0.25)], ["middle", Math.round(d * 0.5)], ["late", d - 10]];
+  if (!b) return [["early", Math.round(d * 0.25)], ["middle", Math.round(d * 0.5)], ["late", d - span(10)]];
   const list = [];
-  if (b.headline) list.push(["headline", Math.round((b.headline.in + b.headline.out) / 2) + 8]);
+  if (b.headline) list.push(["headline", Math.round((b.headline.in + b.headline.out) / 2) + span(8)]);
   // Mid-exit: the type is still visible; whatever is behind it must be its field, not the photograph.
-  if (b.headline) list.push(["headline-exit", b.headline.out + 4]);
+  if (b.headline) list.push(["headline-exit", b.headline.out + span(4)]);
   if (b.window) list.push(["landed", b.window.landed + 2]);
   for (const a of b.actions) {
     if (a.press !== undefined) list.push([`${a.name}-press`, a.press]);
     list.push([`${a.name}-result`, a.resultCamera + 2]);
     list.push([`${a.name}-hold-end`, Math.min(a.holdUntil, d) - 2]);
   }
+  // No click means the only proof of the shot is the picture after the title. Render that
+  // picture. A readable headline on a flat field is not the shot.
+  if (!b.actions.length) {
+    const after = Math.min(d - span(12), Math.max((b.headline?.out ?? 0) + span(20), Math.round(d * 0.35)));
+    const mid = Math.min(d - span(12), Math.max(after + 1, Math.round(d * 0.62)));
+    const end = d - span(12);
+    if (after < d) list.push(["body", after]);
+    if (mid > after) list.push(["body-mid", mid]);
+    if (end > mid) list.push(["body-end", end]);
+  }
   return list;
 }
+
+const stillOptions = { chromiumOptions: { gl: "angle" } };
 
 // 3. Render every still with the overlay on.
 const serveUrl = await bundle({ entryPoint: join(here, "src/index.ts") });
@@ -96,7 +112,7 @@ for (const id of Object.keys(durations)) {
   for (const [label, frame] of framesFor(id)) {
     const output = join(dir, `${String(frame).padStart(4, "0")}-${label}.png`);
     try {
-      await renderStill({ composition, serveUrl, frame, output, inputProps: { debug: true }, imageFormat: "png" });
+      await renderStill({ ...stillOptions, composition, serveUrl, frame, output, inputProps: { debug: true }, imageFormat: "png" });
       stills.push({ shot: id, label, frame, file: relative(here, output) });
     } catch (error) {
       report(`${id} frame ${frame} (${label})`, error);
@@ -121,6 +137,9 @@ const contrast = (files, extra = []) => {
 };
 contrast(flat);
 contrast(exits, ["--busy-only"]);
+// The body of a shot with no clicks may be a graph, a diff, or a network. Those are busy on
+// purpose. The check is only that the frame is not an empty field.
+contrast(stills.filter((s) => s.label.startsWith("body")), ["--blank-only"]);
 
 // 5. Held frames end between rows, not through a line of type. The hold-end stills are rendered
 // again without the debug overlay, whose outlines would read as cut strokes.
@@ -131,7 +150,7 @@ for (const [id, b] of Object.entries(sheets)) {
     for (const [label, frame] of [["result", a.resultCamera + 2], ["hold-end", a.holdUntil - 2]]) {
       const output = join(reviewDir, id, `clean-${String(frame).padStart(4, "0")}-${a.name}-${label}.png`);
       try {
-        await renderStill({ composition, serveUrl, frame, output, imageFormat: "png" });
+        await renderStill({ ...stillOptions, composition, serveUrl, frame, output, imageFormat: "png" });
         files.push(output);
       } catch {
         // The framing error was already reported by the debug render of this shot.
@@ -182,7 +201,7 @@ for (const [id, b] of Object.entries(sheets)) {
   const composition = await selectComposition({ serveUrl, id: `Shot-${id}` });
   const output = join(reviewDir, id, `clean-${String(b.window.landed + 2).padStart(4, "0")}-real.png`);
   try {
-    await renderStill({ composition, serveUrl, frame: b.window.landed + 2, output, imageFormat: "png" });
+    await renderStill({ ...stillOptions, composition, serveUrl, frame: b.window.landed + 2, output, imageFormat: "png" });
     pairs.push(real.screenshot, relative(here, output), "150,137,1620,889");
   } catch {
     // Reported by the debug render.

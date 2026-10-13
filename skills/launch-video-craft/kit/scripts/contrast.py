@@ -1,17 +1,19 @@
-"""Checks that type on a flat field can be read. Usage: contrast.py [--busy-only] still.png [...]
+"""Checks that type on a flat field can be read. Usage: contrast.py [--busy-only | --blank-only] still.png [...]
 
---busy-only checks only that the field is plain, for stills of type fading out on purpose.
+--busy-only checks that exiting type still has a plain field behind it.
+--blank-only checks that the frame is not an empty field. Use it on the body of a shot,
+where the picture is supposed to be busy.
 
 Prints one JSON object per still: {"file", "ok", "problems": [...]}.
 
 The frame is cut into a 12×8 grid. In each cell the background is the median colour.
-Pixels that differ from it are something drawn there (type, a logo). Two failures:
-- busy: the cell's background is not flat (under 55% of pixels near the median), so type
-  sits on a photograph or texture. Headlines, title cards, and end cards sit on a plain field.
-- faint: a visible mark whose strongest pixels reach under 3:1 against the background,
-  like a dark logo on a dark card.
-- blank: almost nothing differs from the frame's median colour, so nothing can be read,
-  like white type on a white field.
+Pixels that differ from it are something drawn there (type, a logo, the object). Failures:
+- type on a picture: the only marks sit in cells whose background is not flat. The words
+  need their own plain plate. The rest of the frame may keep the object.
+- faint: no flat cell reaches 3:1, so the type itself is too light (a dark logo on an ink card).
+  A smooth object beside type that already reads at 3:1 is not a failed headline.
+- blank: a headline where almost nothing differs from the frame's median colour, or a body
+  still (--blank-only) where no cell has a mark. One word is enough for the body.
 """
 
 import json
@@ -45,14 +47,24 @@ def ratio(a, b):
     return (np.maximum(a, b) + 0.05) / (np.minimum(a, b) + 0.05)
 
 
-def check(path: str, busy_only: bool = False) -> dict:
+def check(path: str, busy_only: bool = False, blank_only: bool = False) -> dict:
     lum = luminance(load(path))
     h, w = lum.shape
     problems = []
     drawn = float((ratio(lum, float(np.median(lum))) >= 1.06).mean())
+    if blank_only:
+        # One word or one line is the shot. Fail only when no cell has a mark, which is an
+        # empty field. A whole-frame percentage treats that word as nothing.
+        for row in range(ROWS):
+            for col in range(COLS):
+                cell = lum[row * h // ROWS:(row + 1) * h // ROWS, col * w // COLS:(col + 1) * w // COLS]
+                marks = ratio(cell, float(np.median(cell)))
+                if float((marks >= 1.06).mean()) >= 0.005:
+                    return {"file": path, "ok": True, "problems": []}
+        return {"file": path, "ok": False, "problems": ["blank: no cell has a mark; the body after the headline is an empty field"]}
     if drawn < 0.002 and not busy_only:
-        return {"file": path, "ok": False, "problems": [f"blank: only {drawn * 100:.2f}% of the frame differs from its field; the type may be the same colour as its field"]}
-    busy, faint = [], []
+        return {"file": path, "ok": False, "problems": [f"blank: only {drawn * 100:.2f}% of the frame differs from its field; nothing is on screen"]}
+    readable, faint, on_picture = [], [], []
     for row in range(ROWS):
         for col in range(COLS):
             cell = lum[row * h // ROWS:(row + 1) * h // ROWS, col * w // COLS:(col + 1) * w // COLS]
@@ -60,16 +72,22 @@ def check(path: str, busy_only: bool = False) -> dict:
             r = ratio(cell, bg)
             near = float((r < 1.06).mean())
             marks = r[r >= 1.06]
-            if near < 0.55:
-                busy.append((col, row, round(near, 2)))
+            if marks.size < cell.size * 0.02:
                 continue
-            if not busy_only and marks.size >= cell.size * 0.02:
-                strongest = float(np.percentile(marks, 90))
-                if strongest < 3:
-                    faint.append((col, row, round(strongest, 2)))
-    if busy:
-        problems.append(f"busy field behind type in {len(busy)} of {ROWS * COLS} cells (e.g. column {busy[0][0]}, row {busy[0][1]}: only {int(busy[0][2] * 100)}% flat); put type on a plain field")
-    if faint:
+            if near < 0.55:
+                on_picture.append((col, row, round(near, 2)))
+                continue
+            strongest = float(np.percentile(marks, 90))
+            if strongest < 3:
+                faint.append((col, row, round(strongest, 2)))
+            else:
+                readable.append((col, row))
+    # Words need one flat cell at 3:1 or more. A picture, or a smooth object under 3:1,
+    # may fill the rest of the frame. Faint cells fail only when nothing on a flat field reads.
+    if on_picture and not readable and not (busy_only and faint):
+        sample = on_picture[0]
+        problems.append(f"type sits on a picture (column {sample[0]}, row {sample[1]} is only {int(sample[2] * 100)}% flat); give the words a plain plate. The rest of the frame may keep the object")
+    if not busy_only and faint and not readable:
         worst = min(faint, key=lambda c: c[2])
         problems.append(f"faint mark in {len(faint)} cells, as low as {worst[2]}:1 (column {worst[0]}, row {worst[1]}); it needs 3:1 against its background")
     return {"file": path, "ok": not problems, "problems": problems}
@@ -78,5 +96,7 @@ def check(path: str, busy_only: bool = False) -> dict:
 if __name__ == "__main__":
     args = sys.argv[1:]
     busy_only = "--busy-only" in args
-    for file in (a for a in args if a != "--busy-only"):
-        print(json.dumps(check(file, busy_only)))
+    blank_only = "--blank-only" in args
+    flags = {"--busy-only", "--blank-only"}
+    for file in (a for a in args if a not in flags):
+        print(json.dumps(check(file, busy_only, blank_only)))
